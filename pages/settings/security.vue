@@ -8,6 +8,7 @@
 	const authenticatorAddDateDisplay = computed(() => formatDateWithLocale(new Date(checkUser2FAResult.value?.totpCreationDateTime ?? 0)));
 	const selfUserInfoStore = useSelfUserInfoStore();
 
+	// 修改邮箱相关
 	const showChangeEmail = ref(false);
 	const changeEmailVerificationCode = ref("");
 	const newEmail = ref("");
@@ -15,6 +16,7 @@
 	const changeEmailPassword = ref("");
 	const isChangingEmail = ref(false);
 
+	// 修改密码相关
 	const showChangePassword = ref(false);
 	const changePasswordVerificationCode = ref("");
 	const oldPassword = ref("");
@@ -22,6 +24,7 @@
 	const confirmNewPassword = ref("");
 	const isChangingPassword = ref(false);
 
+	// 2FA 相关
 	type TypeOf2FA = "none" | "email" | "totp"
 	const categoryOf2FA = ref<TypeOf2FA>("none"); // 2FA 的类型
 	// 2FA 的类型，带有副作用
@@ -30,19 +33,26 @@
 			return categoryOf2FA.value;
 		},
 		set(newValue) {
-			// 当响应式变量从 totp 改变为其他非 totp 的值，且用户的 2FA 类型为 totp 时，打开解绑 TOTP 的模态框，且不会导致导致响应式变量的变更
-			if (categoryOf2FA.value === 'totp' && newValue !== 'totp' && checkUser2FAResult.value?.type === 'totp') {
+			if (categoryOf2FA.value === "totp" && newValue !== "totp" && checkUser2FAResult.value?.type === "totp") {
+				// 当响应式变量从 totp 改变为其他非 totp 的值，且用户的 2FA 类型为 totp 时，打开解绑 TOTP 的模态框，且不会导致导致响应式变量的变更
 				// TODO: 使用多语言
-				useToast("在关闭 2FA 之前必须删除 TOTP 验证器", "warning", 5000)
+				useToast("在关闭 2FA 之前必须删除 TOTP 验证器", "warning", 5000);
 				openDeleteTotpModel();
+			} else if (categoryOf2FA.value === "email" && newValue !== "email" && checkUser2FAResult.value?.type === "email") {
+				// 当响应式变量从 email 改变为其他非 email 的值，且用户的 2FA 类型为 email 时，打开删除 Email 2FA 的模态框，且不会导致导致响应式变量的变更
+				openDeleteEmail2FAModel();
+			} else if (newValue === "email" && categoryOf2FA.value !== "email" && checkUser2FAResult.value?.type !== "email") {
+				// 当响应式变量切换为 email 时，创建邮件 2FA
+				categoryOf2FA.value = newValue;
+				createEmail2FA();
 			} else
-				categoryOf2FA.value = newValue
+				categoryOf2FA.value = newValue;
 		}
 	});
 	const checkUser2FAResult = ref<CheckUserHave2FAServiceResponseDto>(); // 获取到的用户 2FA 类型
 	const hasBoundTotp = computed(() => checkUser2FAResult.value?.success && checkUser2FAResult.value.have2FA && checkUser2FAResult.value?.type === "totp"); // 是否已经有 TOTP，当 2FA 存在且类型为 totp 时，开启编辑 TOTP 的模态框，否则开启创建 TOTP 的模态框
 
-	// 创建 TOTP
+	// 创建 TOTP 相关
 	const showCreateTotpModel = ref(false); // 是否显示创建 TOTP 模态框
 	const otpAuth = ref<string>(''); // TOTP AUTH（也就是二维码中的值）
 	const totpQrcodeLevel = ref<Level>('M'); // 二维码等级
@@ -54,11 +64,17 @@
 	const displayBackupCode = computed(() => backupCode.value.join("\t")); // 用于显示的备份码，中间用 TAB 隔开
 	const recoveryCode = ref(""); // 恢复码
 
-	// 删除 TOTP
-	const showDeleteTotpModel = ref(false); // 是否显示编辑 TOTP 模态框
+	// 删除 TOTP 相关
+	const showDeleteTotpModel = ref(false); // 是否显示删除 TOTP 的模态框
 	const deleteTotpVerificationCode = ref(""); // 删除 TOTP 时用户输入的验证码
 	const deleteTotpPassword = ref(""); // 删除 TOTP 时用户输入的密码
 	const isDeletingTotp = ref(false); // 是否正在删除 TOTP
+
+	// 删除 Email 2FA 相关
+	const showDeleteEmail2FAModel = ref(false); // 是否显示删除 Email 2FA 的模态框
+	const deleteEmail2FAVerificationCode = ref(""); // 删除 Email 2FA 时用户输入的验证码
+	const deleteEmail2FAPassword = ref(""); // 删除 Email 2FA 时用户输入的密码
+	const isDeletingEmail2FA = ref(false); // 是否正在删除 Email 2FA
 
 	/**
 	 * 修改 Email
@@ -136,6 +152,30 @@
 			categoryOf2FAComputed.value = checkUser2FAResult.value.type;
 		else
 			categoryOf2FAComputed.value = "none";
+	}
+
+	/**
+	 * 用户创建 Email 身份验证器
+	 */
+	async function createEmail2FA() {
+		try {
+			const headerCookie = useRequestHeaders(["cookie"]);
+			const createEmail2FAResult = await api.user.createEmail2FA(headerCookie);
+			if (!createEmail2FAResult.success)
+				useToast("开启邮箱 2FA 验证失败，请稍后重试。", "error", 5000); // TODO: 使用多语言
+
+			if (createEmail2FAResult.isExists)
+				useToast("已开启 2FA 验证，请刷新页面。", "error", 5000); // TODO: 使用多语言
+
+			checkUserHave2FAByUUID();
+		} catch (error) {
+			useToast("开启邮箱 2FA 验证时出错，请稍后重试。", "error", 5000); // TODO: 使用多语言
+			checkUserHave2FAByUUID();
+		}
+	}
+
+	async function openDeleteEmail2FAModel() {
+
 	}
 
 	/**
@@ -262,18 +302,34 @@
 			const deleteTotpByVerificationCodeResult = await api.user.deleteTotpByVerificationCode(deleteTotpAuthenticatorByTotpVerificationCodeRequest, headerCookie);
 			if (deleteTotpByVerificationCodeResult.isCoolingDown)
 				// TODO: 使用多语言
-				useToast("无法删除，验证码冷却中", "warning");
+				useToast("无法删除，验证码冷却中。", "warning");
 
-			if (deleteTotpByVerificationCodeResult.success)
-				categoryOf2FAComputed.value = "none";
-
-			checkUserHave2FAByUUID();
-			closeDeleteTotpModel();
+			if (deleteTotpByVerificationCodeResult.success) {
+				closeDeleteTotpModel();
+				await checkUserHave2FAByUUID();
+			}
 		} catch (error) {
 			// TODO: 使用多语言
 			useToast("删除 TOTP 身份验证器失败，请稍后再试", "error", 5000);
 			isDeletingTotp.value = false;
 		}
+	}
+
+	/**
+	 * 关闭删除 Email 2FA 的模态框，并清除相关状态
+	 */
+	function closeDeleteEmail2FAModel() {
+		showDeleteEmail2FAModel.value = false;
+		isDeletingEmail2FA.value = false;
+		deleteEmail2FAPassword.value = "";
+		deleteEmail2FAVerificationCode.value = "";
+	}
+
+	/**
+	 * 删除 Email 2FA
+	 */
+	async function deleteEmail2FAByVerification() {
+		// TODO
 	}
 
 	await checkUserHave2FAByUUID();
@@ -428,6 +484,20 @@
 				<Button @click="deleteTotpByVerification" :disabled="isDeletingTotp" :loading="isDeletingTotp">{{ t.delete }}</Button>
 			</template>
 		</Modal>
+
+		<!-- TODO: 使用多语言 -->
+		<Modal v-model="showDeleteTotpModel" title="删除邮箱验证" icon="delete">
+			<div class="delete-email-2fa-modall">
+				<form>
+					<TextBox v-model="deleteEmail2FAPassword" :required="true" type="password" icon="lock" :placeholder="t.password" autoComplete="current-password" />
+					<SendVerificationCode v-model="deleteEmail2FAVerificationCode" verificationCodeFor="delete-email-2fa" />
+				</form>
+			</div>
+			<template #footer-right>
+				<Button class="secondary" :disabled="isDeletingEmail2FA" @click="closeDeleteEmail2FAModel">{{ t.step.cancel }}</Button>
+				<Button @click="deleteEmail2FAByVerification" :disabled="isDeletingEmail2FA" :loading="isDeletingEmail2FA">{{ t.delete }}</Button>
+			</template>
+		</Modal>
 	</div>
 </template>
 
@@ -520,6 +590,23 @@
 	}
 
 	.delete-totp-modal {
+		display: flex;
+		flex-direction: column;
+		gap: 24px;
+		width: 300px;
+
+		> form {
+			display: flex;
+			flex-direction: column;
+			gap: 16px;
+		}
+
+		.text-box {
+			--size: large;
+		}
+	}
+
+	.delete-email-2fa-modal {
 		display: flex;
 		flex-direction: column;
 		gap: 24px;

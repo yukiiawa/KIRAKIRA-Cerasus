@@ -24,6 +24,11 @@ import type {
 	ConfirmUserTotpAuthenticatorResponseDto,
 	DeleteTotpAuthenticatorByTotpVerificationCodeRequestDto,
 	DeleteTotpAuthenticatorByTotpVerificationCodeResponseDto,
+	CreateUserEmailAuthenticatorResponseDto,
+	DeleteUserEmailAuthenticatorRequestDto,
+	DeleteUserEmailAuthenticatorResponseDto,
+	SendUserEmailAuthenticatorVerificationCodeRequestDto,
+	SendUserEmailAuthenticatorVerificationCodeResponseDto,
 } from "./UserControllerDto";
 
 const BACK_END_URL = getCorrectUri();
@@ -417,4 +422,57 @@ export const deleteTotpByVerificationCode = async (deleteTotpAuthenticatorByTotp
 		}
 	);
 	return result.value as DeleteTotpAuthenticatorByTotpVerificationCodeResponseDto;
+}
+
+/**
+ * 用户创建 Email 身份验证器
+ * @param headerCookie
+ * @returns 用户创建 Email 身份验证器的请求响应
+ */
+export const createEmail2FA = async (headerCookie: { cookie?: string | undefined }): Promise<CreateUserEmailAuthenticatorResponseDto> => {
+	// NOTE: use { headers: headerCookie } to passing client-side cookies to backend API when SSR.
+	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
+	const { data: result } = await useFetch(
+		`${USER_API_URL}/createEmailAuthenticator`,
+		{
+			method: "POST",
+			headers: headerCookie,
+			credentials: "include",
+		}
+	)
+
+	return result.value as CreateUserEmailAuthenticatorResponseDto;
+}
+
+/**
+ * 发送 Email 身份验证器验证码
+ * @param sendUserEmailAuthenticatorVerificationCodeRequest 发送 Email 身份验证器验证码的请求载荷
+ * @returns 发送 Email 身份验证器验证码的请求响应
+ */
+export const sendUserEmailAuthenticatorVerificationCode = async (sendUserEmailAuthenticatorVerificationCodeRequest: SendUserEmailAuthenticatorVerificationCodeRequestDto): Promise<SendUserEmailAuthenticatorVerificationCodeResponseDto> => {
+	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
+	return await POST(`${USER_API_URL}/sendUserEmailAuthenticator`, sendUserEmailAuthenticatorVerificationCodeRequest, { credentials: "include" }) as SendUserEmailAuthenticatorVerificationCodeResponseDto;
+};
+
+/**
+ * 用户删除 Email 2FA
+ * @param deleteUserEmailAuthenticatorRequest 用户删除 Email 2FA 的请求载荷
+ * @param headerCookie
+ * @returns 用户删除 Email 2FA 的请求响应
+ */
+export const deleteEmail2FA = async (deleteUserEmailAuthenticatorRequest: DeleteUserEmailAuthenticatorRequestDto, headerCookie: { cookie?: string | undefined }): Promise<DeleteUserEmailAuthenticatorResponseDto> => {
+
+	// NOTE: use { headers: headerCookie } to passing client-side cookies to backend API when SSR.
+	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
+	const { data: result } = await useFetch(
+		`${USER_API_URL}/deleteUserEmailAUthenticator`,
+		{
+			method: "DELETE",
+			body: { ...deleteUserEmailAuthenticatorRequest },
+			headers: headerCookie,
+			credentials: "include",
+		}
+	)
+
+	return result.value as CreateUserEmailAuthenticatorResponseDto;
 }
