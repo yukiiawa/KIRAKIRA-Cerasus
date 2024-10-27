@@ -465,7 +465,7 @@ export const deleteEmail2FA = async (deleteUserEmailAuthenticatorRequest: Delete
 	// NOTE: use { headers: headerCookie } to passing client-side cookies to backend API when SSR.
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
 	const { data: result } = await useFetch(
-		`${USER_API_URL}/deleteUserEmailAUthenticator`,
+		`${USER_API_URL}/deleteUserEmailAuthenticator`,
 		{
 			method: "DELETE",
 			body: { ...deleteUserEmailAuthenticatorRequest },
