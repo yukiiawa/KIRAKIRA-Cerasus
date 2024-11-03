@@ -835,6 +835,10 @@ export type ConfirmUserTotpAuthenticatorResponseDto = {
  * 用户发送 Email 身份验证器验证邮件的请求载荷
  */
 export type SendUserEmailAuthenticatorVerificationCodeRequestDto = {
+	/** 用户邮箱 */
+	email: string;
+	/** 在前端已经 Hash 过一次的的密码 */
+	passwordHash: string;
 	/** 用户客户端使用的语言 */
 	clientLanguage: string;
 };
@@ -850,6 +854,19 @@ export type SendUserEmailAuthenticatorVerificationCodeResponseDto = {
 	/** 附加的文本消息 */
 	message?: string;
 };
+
+/**
+ * 用户发送删除 Email 身份验证器验证邮件的请求载荷
+ */
+export type SendDeleteUserEmailAuthenticatorVerificationCodeRequestDto = {
+	/** 用户客户端使用的语言 */
+	clientLanguage: string;
+};
+
+/**
+ * 用户发送删除 Email 身份验证器验证邮件的请求响应
+ */
+export type SendDeleteUserEmailAuthenticatorVerificationCodeResponseDto = {} & SendUserEmailAuthenticatorVerificationCodeResponseDto;
 
 /**
  * 验证 Email 身份验证器的验证码是否正确的请求载荷

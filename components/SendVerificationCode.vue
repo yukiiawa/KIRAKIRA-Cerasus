@@ -70,14 +70,14 @@
 	}
 
 	/**
-	 * 请求发送 Email 身份验证器验证码
+	 * 请求发送删除 Email 身份验证器验证码
 	 */
 	async function requestSendDeleteEmail2FAVerificationCodeEmail() {
 		const locale = getCurrentLocaleLangCode();
-		const sendUserEmailAuthenticatorVerificationCodeRequest: SendUserEmailAuthenticatorVerificationCodeRequestDto = {
+		const sendUserDeleteEmailAuthenticatorVerificationCodeRequest: SendUserDeleteEmailAuthenticatorVerificationCodeRequestDto = {
 			clientLanguage: locale,
 		};
-		const sendUserEmailAuthenticatorVerificationCodeResult = await api.user.sendUserEmailAuthenticatorVerificationCode(sendUserEmailAuthenticatorVerificationCodeRequest);
+		const sendUserEmailAuthenticatorVerificationCodeResult = await api.user.sendDeleteUserEmailAuthenticatorVerificationCode(sendUserDeleteEmailAuthenticatorVerificationCodeRequest);
 		if (sendUserEmailAuthenticatorVerificationCodeResult.success && sendUserEmailAuthenticatorVerificationCodeResult.isCoolingDown)
 			useToast("邮件发送冷却中，请稍后再试", "error", 5000);
 	}

@@ -29,6 +29,8 @@ import type {
 	DeleteUserEmailAuthenticatorResponseDto,
 	SendUserEmailAuthenticatorVerificationCodeRequestDto,
 	SendUserEmailAuthenticatorVerificationCodeResponseDto,
+	SendDeleteUserEmailAuthenticatorVerificationCodeRequestDto,
+	SendDeleteUserEmailAuthenticatorVerificationCodeResponseDto,
 } from "./UserControllerDto";
 
 const BACK_END_URL = getCorrectUri();
@@ -452,6 +454,16 @@ export const createEmail2FA = async (headerCookie: { cookie?: string | undefined
 export const sendUserEmailAuthenticatorVerificationCode = async (sendUserEmailAuthenticatorVerificationCodeRequest: SendUserEmailAuthenticatorVerificationCodeRequestDto): Promise<SendUserEmailAuthenticatorVerificationCodeResponseDto> => {
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
 	return await POST(`${USER_API_URL}/sendUserEmailAuthenticator`, sendUserEmailAuthenticatorVerificationCodeRequest, { credentials: "include" }) as SendUserEmailAuthenticatorVerificationCodeResponseDto;
+};
+
+/**
+ * 发送删除 Email 身份验证器验证码
+ * @param sendDeleteUserEmailAuthenticatorVerificationCodeRequest 发送删除 Email 身份验证器验证码的请求载荷
+ * @returns 发送删除 Email 身份验证器验证码的请求响应
+ */
+export const sendDeleteUserEmailAuthenticatorVerificationCode = async (sendDeleteUserEmailAuthenticatorVerificationCodeRequest: SendDeleteUserEmailAuthenticatorVerificationCodeRequestDto): Promise<SendDeleteUserEmailAuthenticatorVerificationCodeResponseDto> => {
+	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
+	return await POST(`${USER_API_URL}/sendDeleteUserEmailAuthenticator`, sendDeleteUserEmailAuthenticatorVerificationCodeRequest, { credentials: "include" }) as SendUserEmailAuthenticatorVerificationCodeResponseDto;
 };
 
 /**
