@@ -19,6 +19,8 @@
 	const categoryList = ["Anime", "Music", "Otomad", "Tech", "Design", "Game", "Misc"];
 	const categories = ref<Map<string | undefined, number | undefined>>();
 	const resultTimestamp = ref(0);
+
+	const appSettings = useAppSettingsStore();
 </script>
 
 <template>
@@ -36,6 +38,12 @@
 				{{ t.category[cat.toLowerCase()] }}
 			</TabItem>
 		</TabBar>
+		<InfoBar v-if="appSettings.typeOf2FA === 'none'" type="warning" title="警告">
+			你还没有开启二重验证，建议前往 <NuxtLink :to="useLocalePath()('/settings/security')">安全设置</NuxtLink> 页面启用。
+			<br />
+			没有启动二重验证的账号更容易被盗号。
+			<!-- TODO: 使用多语言 -->
+		</InfoBar>
 		<InfoBar title="公告" lite>
 			目前网站仍然处于早期的公测中，由于用户数量增长速度远超预期，站娘已暂停发放邀请码，请不要一直私聊啦！
 			<br />
