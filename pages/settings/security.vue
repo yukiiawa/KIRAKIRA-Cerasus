@@ -1,12 +1,13 @@
 <script setup lang="ts">
-	import QrcodeVue from 'qrcode.vue'
-	import type { Level, RenderAs } from 'qrcode.vue'
+	import QrcodeVue from "qrcode.vue"
+	import type { Level, RenderAs } from "qrcode.vue"
 
 	const passwordChangeDate = ref(new Date());
 	const authenticatorAddDate = ref(new Date());
 	const passwordChangeDateDisplay = computed(() => formatDateWithLocale(passwordChangeDate.value));
 	const authenticatorAddDateDisplay = computed(() => formatDateWithLocale(new Date(checkUser2FAResult.value?.totpCreationDateTime ?? 0)));
 	const selfUserInfoStore = useSelfUserInfoStore();
+	const appSettings = useAppSettingsStore();
 
 	// 修改邮箱相关
 	const showChangeEmail = ref(false);
@@ -26,40 +27,40 @@
 
 	// 2FA 相关
 	type TypeOf2FA = "none" | "email" | "totp"
-	const categoryOf2FA = ref<TypeOf2FA>("none"); // 2FA 的类型
-	// 2FA 的类型，带有副作用
-	const categoryOf2FAComputed = computed<TypeOf2FA>({
+	const categoryOf2FAComputed = computed<TypeOf2FA>({ // 2FA 的类型，带有副作用
 		get() {
-			return categoryOf2FA.value;
+			return appSettings.typeOf2FA === 'email' || appSettings.typeOf2FA === 'totp' ? appSettings.typeOf2FA : 'none';
 		},
 		set(newValue) {
-			if (categoryOf2FA.value === "totp" && newValue !== "totp" && checkUser2FAResult.value?.type === "totp") {
+			if (appSettings.typeOf2FA === "totp" && newValue !== "totp" && checkUser2FAResult.value?.type === "totp") {
 				// 当响应式变量从 totp 改变为其他非 totp 的值，且用户的 2FA 类型为 totp 时，打开解绑 TOTP 的模态框，且不会导致导致响应式变量的变更
 				// TODO: 使用多语言
 				useToast("在关闭 2FA 之前必须删除 TOTP 验证器", "warning", 5000);
 				openDeleteTotpModel();
-			} else if (categoryOf2FA.value === "email" && newValue !== "email" && checkUser2FAResult.value?.type === "email") {
+			} else if (appSettings.typeOf2FA === "email" && newValue !== "email" && checkUser2FAResult.value?.type === "email") {
 				// 当响应式变量从 email 改变为其他非 email 的值，且用户的 2FA 类型为 email 时，打开删除 Email 2FA 的模态框，且不会导致导致响应式变量的变更
 				openDeleteEmail2FAModel();
 				useToast("解除 Email 绑定后即可关闭 2FA", "warning", 5000);
-			} else if (newValue === "email" && categoryOf2FA.value !== "email" && checkUser2FAResult.value?.type !== "email") {
+			} else if (newValue === "email" && appSettings.typeOf2FA !== "email" && checkUser2FAResult.value?.type !== "email") {
 				// 当响应式变量切换为 email 时，创建邮件 2FA
-				categoryOf2FA.value = newValue;
+				appSettings.typeOf2FA = newValue;
 				createEmail2FA();
 			} else
-				categoryOf2FA.value = newValue;
+				appSettings.typeOf2FA = newValue;
 		}
 	});
 	const checkUser2FAResult = ref<CheckUserHave2FAServiceResponseDto>(); // 获取到的用户 2FA 类型
 	const hasBoundTotp = computed(() => checkUser2FAResult.value?.success && checkUser2FAResult.value.have2FA && checkUser2FAResult.value?.type === "totp"); // 是否已经有 TOTP，当 2FA 存在且类型为 totp 时，开启编辑 TOTP 的模态框，否则开启创建 TOTP 的模态框
+	const isEmail2FADisable = computed(() => checkUser2FAResult.value?.type === "totp" || categoryOf2FAComputed.value === "totp")
+	const isTotp2FADisable = computed(() => checkUser2FAResult.value?.type === "email" || categoryOf2FAComputed.value === "email")
 
 	// 创建 TOTP 相关
 	const showCreateTotpModel = ref(false); // 是否显示创建 TOTP 模态框
-	const otpAuth = ref<string>(''); // TOTP AUTH（也就是二维码中的值）
-	const totpQrcodeLevel = ref<Level>('M'); // 二维码等级
-	const totpQrcodeRenderAs = ref<RenderAs>('svg'); // 二维码渲染格式
+	const otpAuth = ref<string>(""); // TOTP AUTH（也就是二维码中的值）
+	const totpQrcodeLevel = ref<Level>("M"); // 二维码等级
+	const totpQrcodeRenderAs = ref<RenderAs>("svg"); // 二维码渲染格式
 	const totpQrcodeSize = ref<number>(200); // 二维码尺寸（px）
-	const confirmTotpVerificationCode = ref(''); // 确认绑定 TOTP 时用户输入的验证码
+	const confirmTotpVerificationCode = ref(""); // 确认绑定 TOTP 时用户输入的验证码
 	const isConfirmTotp = ref(false); // 是否正在确认绑定 TOTP
 	const backupCode = ref<string[]>([]); // 备份码
 	const displayBackupCode = computed(() => backupCode.value.join("\t")); // 用于显示的备份码，中间用 TAB 隔开
@@ -163,14 +164,15 @@
 			const headerCookie = useRequestHeaders(["cookie"]);
 			const createEmail2FAResult = await api.user.createEmail2FA(headerCookie);
 			if (!createEmail2FAResult.success)
-				useToast("开启邮箱 2FA 验证失败，请稍后重试。", "error", 5000); // TODO: 使用多语言
+				useToast("开启邮箱双重验证失败，请稍后重试。", "error", 5000); // TODO: 使用多语言
 
 			if (createEmail2FAResult.isExists)
-				useToast("已开启 2FA 验证，请刷新页面。", "error", 5000); // TODO: 使用多语言
+				useToast("你已经开启过一个 2FA，请刷新页面。", "warning", 5000); // TODO: 使用多语言
 
+			useToast("已开启邮箱双重验证！", "success", 3000); // TODO: 使用多语言
 			checkUserHave2FAByUUID();
 		} catch (error) {
-			useToast("开启邮箱 2FA 验证时出错，请稍后重试。", "error", 5000); // TODO: 使用多语言
+			useToast("开启邮箱双重验证时出错，请稍后重试。", "error", 5000); // TODO: 使用多语言
 			checkUserHave2FAByUUID();
 		}
 	}
@@ -252,7 +254,7 @@
 		await checkUserHave2FAByUUID();
 
 		showCreateTotpModel.value = false;
-		otpAuth.value = '';
+		otpAuth.value = "";
 		confirmTotpVerificationCode.value = "";
 		isConfirmTotp.value = false;
 		backupCode.value = [];
@@ -388,14 +390,14 @@
 		<!-- TODO: 使用多语言 -->
 		<Subheader icon="lock">双重验证</Subheader>
 		<!-- TODO: 使用多语言 -->
-		<span>开启双重验证可以提高账号的安全性，如果您需要切换 2FA 类型，必须先将其关闭。</span>
+		<span>开启双重验证可以提高账号的安全性，如果你需要切换 2FA 类型，必须先将其关闭。</span>
 		<section list>
 			<!-- TODO: 使用多语言 -->
 			<RadioButton v-model="categoryOf2FAComputed" v-ripple value="none" details="关闭双重验证会降低账号安全性。">关闭</RadioButton>
 			<!-- TODO: 使用多语言 -->
-			<RadioButton v-model="categoryOf2FAComputed" v-ripple value="email" details="验证码将会直接发送到你的邮箱。" :disabled="checkUser2FAResult?.type === 'totp'">邮箱验证码</RadioButton>
+			<RadioButton v-model="categoryOf2FAComputed" v-ripple value="email" details="验证码将会直接发送到你的邮箱。" :disabled="isEmail2FADisable">邮箱验证码</RadioButton>
 			<!-- TODO: 使用多语言 -->
-			<RadioButton v-model="categoryOf2FAComputed" v-ripple value="totp" details="在你绑定了 TOTP 的设备中查看验证码。" :disabled="checkUser2FAResult?.type === 'email'">TOTP（基于时间的一次性密码）</RadioButton>
+			<RadioButton v-model="categoryOf2FAComputed" v-ripple value="totp" details="在你绑定了 TOTP 的设备中查看验证码。" :disabled="isTotp2FADisable">TOTP（基于时间的一次性密码）</RadioButton>
 		</section>
 		<section v-if="categoryOf2FAComputed === 'totp'">
 			<!-- TODO: 使用多语言 -->
@@ -459,7 +461,7 @@
 					</div>
 					<div class="step3">
 						<h3>3. 填写验证码</h3>
-						<p>扫描二维码后，您的验证器程序中应该会出现一个新的验证码。<a href="https://github.com/KIRAKIRA-DOUGA/KIRAKIRA-Cerasus/issues" target="_blank">遇到问题？</a></p>
+						<p>扫描二维码后，你的验证器程序中应该会出现一个新的验证码。<a href="https://github.com/KIRAKIRA-DOUGA/KIRAKIRA-Cerasus/issues" target="_blank">遇到问题？</a></p>
 						<p>请将验证码填写至下方的输入框中，并在倒计时结束前点击“确认绑定”按钮。</p>
 						<form class="totp-confirm-form">
 							<TextBox

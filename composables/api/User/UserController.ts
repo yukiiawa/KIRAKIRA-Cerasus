@@ -18,7 +18,7 @@ import type {
 	ApproveUserInfoRequestDto, ApproveUserInfoResponseDto,
 	AdminClearUserInfoRequestDto,
 	AdminClearUserInfoResponseDto,
-	CheckUserHave2FAServiceResponseDto,
+	CheckUserHave2FAResponseDto,
 	CreateUserTotpAuthenticatorResponseDto,
 	ConfirmUserTotpAuthenticatorRequestDto,
 	ConfirmUserTotpAuthenticatorResponseDto,
@@ -31,6 +31,7 @@ import type {
 	SendUserEmailAuthenticatorVerificationCodeResponseDto,
 	SendDeleteUserEmailAuthenticatorVerificationCodeRequestDto,
 	SendDeleteUserEmailAuthenticatorVerificationCodeResponseDto,
+	CheckUserHave2FARequestDto,
 } from "./UserControllerDto";
 
 const BACK_END_URL = getCorrectUri();
@@ -94,7 +95,9 @@ export const getSelfUserInfo = async (getSelfUserInfoRequest?: GetSelfUserInfoRe
 	const selfUserInfo = await POST(`${USER_API_URL}/self`, getSelfUserInfoRequest, { credentials: "include" }) as GetSelfUserInfoResponseDto;
 	const selfUserInfoResult = selfUserInfo.result;
 	if (selfUserInfo.success && selfUserInfoResult) {
+		const appSettings = useAppSettingsStore();
 		const selfUserInfoStore = useSelfUserInfoStore();
+		appSettings.typeOf2FA = selfUserInfoResult.typeOf2FA || "none";
 		selfUserInfoStore.isLogined = true;
 		selfUserInfoStore.uid = selfUserInfoResult.uid;
 		selfUserInfoStore.userCreateDateTime = selfUserInfoResult.userCreateDateTime ?? 0;
@@ -137,7 +140,9 @@ export async function userLogout(): Promise<UserLogoutResponseDto> {
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
 	const logoutResult = await GET(`${USER_API_URL}/logout`, { credentials: "include" }) as UserLogoutResponseDto;
 	if (logoutResult.success) {
+		const appSettings = useAppSettingsStore();
 		const selfUserInfoStore = useSelfUserInfoStore();
+		appSettings.typeOf2FA = "none";
 		selfUserInfoStore.isLogined = false;
 		selfUserInfoStore.uid = undefined;
 		selfUserInfoStore.userCreateDateTime = 0;
@@ -365,11 +370,26 @@ export const adminClearUserInfo = async (adminClearUserInfoRequest: AdminClearUs
  * @param headerCookie 从客户端发起 SSR 请求时传递的 Header 中的 Cookie 部分，在 SSR 时将其转交给后端 API
  * @returns 通过 UUID 检查用户是否已开启 2FA 身份验证器的请求响应
  */
-export const checkUserHave2FAByUUID = async (headerCookie: { cookie?: string | undefined }): Promise<CheckUserHave2FAServiceResponseDto> => {
+export const checkUserHave2FAByUUID = async (headerCookie: { cookie?: string | undefined }): Promise<CheckUserHave2FAResponseDto> => {
 	// NOTE: use { headers: headerCookie } to passing client-side cookies to backend API when SSR.
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
 	const { data: result } = await useFetch(`${USER_API_URL}/checkUserHave2FAByUUID`, { headers: headerCookie, credentials: "include" });
-	return result.value as CheckUserHave2FAServiceResponseDto;
+	const checkUserHave2FAResponse = result.value as CheckUserHave2FAResponseDto;
+	if (checkUserHave2FAResponse.success) {
+		const appSettings = useAppSettingsStore();
+		appSettings.typeOf2FA = checkUserHave2FAResponse.type || "none";
+	}
+	return checkUserHave2FAResponse
+};
+
+/**
+ * 通过 Email 检查用户是否已开启 2FA 身份验证器
+ * @param checkUserHave2FARequestDto 通过 Email 检查用户是否已开启 2FA 身份验证器的请求载荷
+ * @returns 通过 Email 检查用户是否已开启 2FA 身份验证器的请求响应
+ */
+export const checkUserHave2FAByEmail = async (checkUserHave2FARequest: CheckUserHave2FARequestDto): Promise<CheckUserHave2FAResponseDto> => {
+	const { data: result } = await useFetch(`${USER_API_URL}/checkUserHave2FAByEmail?email=${checkUserHave2FARequest.email}`);
+	return result.value as CheckUserHave2FAResponseDto;
 };
 
 /**
@@ -487,4 +507,4 @@ export const deleteEmail2FA = async (deleteUserEmailAuthenticatorRequest: Delete
 	)
 
 	return result.value as CreateUserEmailAuthenticatorResponseDto;
-}
+};

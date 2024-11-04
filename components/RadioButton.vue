@@ -163,6 +163,7 @@
 		&::before {
 			@include square($size);
 			@include circle;
+			content: "";
 			position: absolute;
 			display: block;
 			background-color: c(icon-color);
@@ -171,7 +172,6 @@
 			animation:
 				inner-resize-back $duration-half $ease-out-max reverse,
 				cut-out $duration-half step-start;
-			content: "";
 		}
 	}
 
@@ -198,8 +198,8 @@
 			&::before {
 				@include short-transition;
 				background-color: c(accent);
-				opacity: 1;
 				scale: 0.5;
+				opacity: 1;
 				animation:
 					inner-resize $duration-half $duration-half $ease-out-max,
 					cut-in $duration-half step-start;

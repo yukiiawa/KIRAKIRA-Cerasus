@@ -12,15 +12,16 @@
 	const { avatarSize, avatarGap, avatarMinLeft } = useScssVariables().numbers;
 	const selfUserInfoStore = useSelfUserInfoStore();
 	const model = defineModel<boolean>();
-	type PageType = "login1" | "login2" | "register1" | "register2" | "register3" | "forgot" | "reset";
+	type PageType = "login1" | "login2-2fa" | "login2-email" | "register1" | "register2" | "register3" | "forgot" | "reset";
 	const currentPage = ref<PageType>("login1");
 	const isWelcome = computed(() => ["register1", "register2", "register3"].includes(currentPage.value));
-	const coverMoveLeft = computed(() => !["login1", "login2"].includes(currentPage.value));
+	const coverMoveLeft = computed(() => !["login1", "login2-2fa", "login2-email"].includes(currentPage.value));
 	const email = ref("");
 	const password = ref("");
-	const loginCode = ref(""); // 登录验证码，该输入框也允许输入一次性备份码（6 位）和一次性恢复码（8 位）
-	const confirmPassword = ref("");
-	const verificationCode = ref("");
+	const clientOtp = ref(""); // TOTP 2FA 登录时的一次性密码
+	const loginVerificationCode = ref(""); // Email 2FA 登录时的验证码
+	const confirmPassword = ref(""); // 二次确认的密码
+	const registrationVerificationCode = ref(""); // 注册时的验证码
 	const passwordHint = ref("");
 	const loginAnimationText = ref<HTMLDivElement>();
 	const avatarMovement = ref(0);
@@ -35,7 +36,8 @@
 			if (value) closeLater();
 		},
 	});
-	const isTryingLogin = ref(false);
+	const isChecking2FA = ref(false); // 正在检查用户是否开启 2FA
+	const isTryingLogin = ref(false); // 正在尝试登录
 	const isTryingRegistration = ref(false);
 	const isCheckingEmail = ref(false);
 	const invitationCode = ref("");
@@ -66,6 +68,8 @@
 	const username = ref("");
 	const nickname = ref("");
 
+	const timeout = useSendVerificationCodeTimeout(); // 全局的验证码倒计时
+
 	/**
 	 * 更新登录动画中头像向左滑动的距离。
 	 */
@@ -81,12 +85,95 @@
 	}
 
 	/**
-	 * 登录账户。
+	 * 发送登录验证码
+	 */
+	async function sentLoginVerificationCode() {
+		try {
+			const passwordStr = password.value;
+			const passwordHash = await generateHash(password.value);
+			const emailStr = email.value;
+			const locale = getCurrentLocaleLangCode();
+
+			if (!passwordStr || !emailStr || !passwordHash) {
+				useToast("发送登录验证码失败，用户名和密码不能为空！", "error", 5000); // TODO: 使用多语言
+				return;
+			}
+
+			const sendUserEmailAuthenticatorVerificationCodeRequest: SendUserEmailAuthenticatorVerificationCodeRequestDto = {
+				passwordHash,
+				email: emailStr,
+				clientLanguage: locale,
+			}
+			const sendUserEmailAuthenticatorVerificationCodeResult = await api.user.sendUserEmailAuthenticatorVerificationCode(sendUserEmailAuthenticatorVerificationCodeRequest)
+			timeout.startTimeout() // 开始倒计时
+
+			if (!sendUserEmailAuthenticatorVerificationCodeResult.success) {
+				useToast("发送登录验证码失败，发送失败，请稍后再试！", "error", 5000); // TODO: 使用多语言
+				currentPage.value = 'login1';
+				return;
+			}
+
+			if (sendUserEmailAuthenticatorVerificationCodeResult.isCoolingDown) {
+				useToast("发送登录验证码失败，正在冷却中！", "warning", 5000); // TODO: 使用多语言
+				currentPage.value = 'login1';
+				return;
+			}
+		} catch (error) {
+
+		}
+	}
+
+	/**
+	 * 登录账户，其一。
+	 */
+	async function check2FA() {
+		isChecking2FA.value = true;
+		try {
+			const passwordStr = password.value;
+			const emailStr = email.value;
+			if (!passwordStr || !emailStr) {
+				useToast("用户名和密码不能为空！", "error", 5000); // TODO: 使用多语言
+				return;
+			}
+
+			const checkUserHave2FARequest: CheckUserHave2FARequestDto = {
+				email: emailStr,
+			};
+			const check2FAByEmailResult = await api.user.checkUserHave2FAByEmail(checkUserHave2FARequest);
+
+			if (!check2FAByEmailResult.success) {
+				useToast("检查用户 2FA 失败！", "error", 5000); // TODO: 使用多语言
+				return;
+			}
+
+			// 如果有 2FA，则跳转到对应的 2FA 登录页面，如果没有 2FA 则直接登录
+			if (check2FAByEmailResult.have2FA) {
+				if (check2FAByEmailResult.type === 'email') {
+					await sentLoginVerificationCode();
+					currentPage.value = "login2-email";
+				} else {
+					currentPage.value = "login2-2fa";
+				}
+			} else
+				await loginUser();
+		} catch (error) {
+			useToast(t.toast.login_failed, "error");
+		}
+		isChecking2FA.value = false;
+	}
+
+	/**
+	 * 登录账户，其二。
 	 */
 	async function loginUser() {
 		if (password.value && email.value) {
 			const passwordHash = await generateHash(password.value);
-			const userLoginRequest: UserLoginRequestDto = { email: email.value, passwordHash };
+			const userLoginRequest: UserLoginRequestDto = {
+				email: email.value,
+				passwordHash,
+				clientOtp: clientOtp.value,
+				verificationCode: loginVerificationCode.value,
+			};
 			try {
 				isTryingLogin.value = true;
 				const loginResponse = await api.user.login(userLoginRequest);
@@ -190,8 +277,8 @@
 	 * 用户注册，其三。
 	 */
 	async function registerUser() {
-		if (!verificationCode.value) {
-			useToast("验证码不能为空", "error"); // TODO: 使用多语言
+		if (!registrationVerificationCode.value) {
+			useToast("注册验证码不能为空", "error"); // TODO: 使用多语言
 			return;
 		}
 		if (password.value !== confirmPassword.value) {
@@ -206,7 +293,7 @@
 			email: email.value,
 			passwordHash,
 			passwordHint: passwordHint.value,
-			verificationCode: verificationCode.value,
+			verificationCode: registrationVerificationCode.value,
 			invitationCode: invitationCode.value,
 			username: username.value,
 			userNickname: nickname.value,
@@ -301,7 +388,7 @@
 								icon="email"
 								:invalid="isInvalidEmail"
 								autoComplete="username"
-								@keyup.enter="loginUser"
+								@keyup.enter="check2FA"
 							/>
 							<TextBox
 								v-model="password"
@@ -309,28 +396,34 @@
 								:placeholder="t.password"
 								icon="lock"
 								autoComplete="current-password"
-								@keyup.enter="loginUser"
+								@keyup.enter="check2FA"
 							/>
 							<div class="button login-button-placeholder">
-								<Button class="button login-button button-block" :loading="isTryingLogin" :disabled="isTryingLogin || selfUserInfoStore.isLogined" @click="loginUser">Link Start!</Button>
+								<Button
+									class="button login-button button-block"
+									:loading="isChecking2FA"
+									:disabled="isChecking2FA || selfUserInfoStore.isLogined || !timeout.isTimeouted"
+									@click="check2FA"
+								>
+									{{ timeout.isTimeouted ? "Link Start!" : `Link Start! (${timeout.timeout})` }}
+								</Button>
 							</div>
 						</form>
 						<div class="action margin-left-inset margin-right-inset">
 							<Button @click="currentPage = 'forgot'">{{ t.loginwindow.login_to_forgot }}</Button>
 							<Button @click="currentPage = 'register1'">{{ t.loginwindow.login_to_register }}</Button>
-							<Button @click="currentPage = 'login2'">登录2</Button>
 						</div>
 					</div>
 
-					<div class="login2">
+					<div class="login2-2fa">
 						<HeadingGroup :name="t.login" englishName="Login" />
-						<span>您开启了 2FA，因此需要提供验证码。<br />若验证设备不可用，请使用备用码或恢复码登录。</span>
+						<span>你开启了 2FA，因此需要提供验证码。<br />若验证设备不可用，请使用备用码或恢复码登录。</span>
 						<span>
-							注意：使用恢复码登陆后，您账号的 2FA 将在登录成功后失效。
+							注意：使用恢复码登陆后，你账号的 2FA 将在登录成功后失效。
 						</span>
 						<form class="form">
 							<TextBox
-								v-model="loginCode"
+								v-model="clientOtp"
 								type="text"
 								placeholder="验证码"
 								icon="lock"
@@ -338,12 +431,35 @@
 								autoComplete="username"
 								@keyup.enter="loginUser"
 							/>
+							<div class="button login-button-placeholder">
+								<Button class="button login-button button-block" :loading="isTryingLogin" :disabled="isTryingLogin || selfUserInfoStore.isLogined" @click="loginUser">Link Start!</Button>
+							</div>
 						</form>
-						<div class="button login-button-placeholder">
-							<Button class="button login-button button-block" :loading="isTryingLogin" :disabled="isTryingLogin || selfUserInfoStore.isLogined" @click="loginUser">Link Start!</Button>
-						</div>
 						<div class="action margin-left-inset margin-right-inset">
 							<Button @click="currentPage = 'login1'">返回</Button>
+							<Button>需要帮助？</Button>
+						</div>
+					</div>
+					<div class="login2-email">
+						<HeadingGroup :name="t.login" englishName="Login" />
+						<span>你开启了邮箱 2FA，我们已经向你的邮箱发送了一封包含验证码的邮件。<br />若未收到验证码，请检查垃圾邮件。</span>
+						<form class="form">
+							<TextBox
+								v-model="loginVerificationCode"
+								type="text"
+								placeholder="验证码"
+								icon="lock"
+								:invalid="isInvalidEmail"
+								autoComplete="username"
+								@keyup.enter="loginUser"
+							/>
+							<div class="button login-button-placeholder">
+								<Button class="button login-button button-block" :loading="isTryingLogin" :disabled="isTryingLogin || selfUserInfoStore.isLogined" @click="loginUser">Link Start!</Button>
+							</div>
+						</form>
+						<div class="action margin-left-inset margin-right-inset">
+							<Button @click="currentPage = 'login1'">返回</Button>
+							<Button>需要帮助？</Button>
 						</div>
 					</div>
 				</div>
@@ -434,7 +550,7 @@
 						<HeadingGroup :name="t.register" englishName="Register" class="collapse" />
 						<div class="form">
 							<div><Preserves>{{ t.loginwindow.register_email_sent_info }}</Preserves></div>
-							<SendVerificationCode v-model="verificationCode" :email="email" verificationCodeFor="registration" />
+							<SendVerificationCode v-model="registrationVerificationCode" :email="email" verificationCodeFor="registration" />
 							<TextBox
 								v-model="confirmPassword"
 								type="password"
@@ -623,16 +739,25 @@
 			@if true {
 				// HACK: 为了故意不应用排序规则而将下面这部分页面声明单独提炼在下方。
 				@include page("!.login1", ".login1", left);
-				@include page("!.login2", ".login2", left);
-				@include page(".login2", ".login1", left);
-				@include page(".login1", ".login2", right);
+
+				@include page("!.login2-2fa", ".login2-2fa", left);
+				@include page(".login2-2fa", ".login1", left);
+				@include page(".login1", ".login2-2fa", right);
+
+				@include page("!.login2-email", ".login2-email", left);
+				@include page(".login2-email", ".login1", left);
+				@include page(".login1", ".login2-email", right);
+
 				@include page("!.register1", ".register1", right);
 				@include page("!.register2", ".register2", right);
 				@include page("!.register3", ".register3", right);
+
 				@include page("!.forgot", ".forgot", right);
 				@include page("!.reset", ".reset", right);
+
 				@include page(".register2", ".register1", left);
 				@include page(".register3", ".register2", left);
+
 				@include page("!.register1, .register2, .register3", ".register-title", right);
 			}
 		}
