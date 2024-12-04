@@ -43,46 +43,35 @@ KIRAKIRA 的前端
 查看 [Nuxt 3 文档](https://nuxt.com/)以了解更多信息。
 
 ### 安装
+克隆本存储库，您可以使用如下命令，或其他 Git 兼容客户端程序。
+```
+git clone https://github.com/KIRAKIRA-DOUGA/KIRAKIRA-Cerasus.git
+```
 
-确保安装依赖项：
+完成克隆后，在程序根目录执行以下命令安装依赖包。
 
 ```bash
 # pnpm
 pnpm install
 ```
 
+
 ### 开发服务器
-KIRAKIRA Cerasus 支持多种模式的开发服务器，请选择您需要的方式启动。
-
-#### HTTPS 模式（默认）
-
-启动一个带有 HTTPS 支持的开发服务器，并使用**线上**后端 API。
-
-在 Visual Studio Code 中，按下 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd>，然后选择 `npm: dev` 来启动。
-
-或者，按下 <kbd>F5</kbd> 键即可启动，如需停止服务器可以按下 <kbd>Shift</kbd> + <kbd>F5</kbd>。
-
-您也可以在程序根目录中执行以下命令来启动：
-```bash
-pnpm dev
-```
-
-启动后，您应该能够在这个地址访问：https://localhost:3000/
-
-以上方式会开启 HTTPS，以便浏览器提供 HTTPS 特有的功能及安全性。
-
-在首次访问时会弹出“此站点不安全”的警告，这是正常现象，选择“仍然访问”即可。
-
-> [!WARNING]\
-> 如果您的端口号 3000 已被其它应用程序或设备等占用了，此时会自动调整为端口号 3001，以此类推。请务必仔细观察开发服务器控制台声明的正确网址。
+KIRAKIRA Cerasus 的开发服务器具有多种模式供您选择。\
+您可以使用快捷命令启动常用的开发模式，也可以根据偏好自定义启动命令。
 
 > [!IMPORTANT]\
-> 通过此方式启动的开发服务器，连接的是线上的后端 API。您仍然在与线上环境交互。\
-> 这和通过我们的官方网站或 APP 使用 KIRAKIRA 服务没有区别，在这种情况下 KIRAKIRA 用户协议及免责条款仍然适用。
+> 1\. 部分功能需要启用 HTTPS 方可正常工作，KIRAKRIA Cerasus 默认使用[该路径](server/)中的自签名证书。在首次访问时浏览器会弹出“此站点不安全”警告，这是正常现象，选择“仍然访问”即可。\
+> 2\. 如果您本地的 3000 端口已被其它应用程序或设备占用，开发服务器会自动将端口号调整为 3001，以此类推。请务必仔细观察控制台输出的正确网址。
 
-#### HTTPS 本地后端模式
+
+#### 本地后端模式
 
 启动一个带有 HTTPS 支持的开发服务器，并使用**本地**后端 API。
+
+通过此方式启动的开发服务器，连接的是您本地的后端 API。您浏览或发布的内容由您自行管理，与 KIRAKIRA 无关。\
+您需要额外运行 [KIRAKIRA-Rosales 后端服务](https://github.com/KIRAKIRA-DOUGA/KIRAKIRA-Rosales)，否则程序将不会如期工作。
+
 
 请按下键盘按键 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd>，然后选择 `npm: dev local`。
 
@@ -94,128 +83,77 @@ pnpm dev-local
 
 启动后，您应该能够在这个地址访问：https://localhost:3000/
 
-以上方式会开启 HTTPS，以便浏览器提供 HTTPS 特有的功能及安全性。
+#### 线上后端预览模式
 
-在首次访问时会弹出“此站点不安全”的警告，这是正常现象，选择“仍然访问”即可。
+您可以仅在本地启动前端开发服务器，并连接**线上**后端 API，无需在本地启动后端服务。\
+KIRAKIRA 线上拥有一个生产环境后端和一个预生产环境后端，生产环境与您访问的 kirakira.moe 官网一致，预生产环境则可能包含测试数据和开发中功能。
 
-> [!IMPORTANT]\
-> 通过此方式启动的开发服务器，连接的是本地的后端 API。您与您本地的环境交互，数据将由您本地运行的后端程序管理，与 KIRAKIRA 无关。\
-> 您需要额外运行 [KIRAKIRA-Rosales 后端服务](https://github.com/KIRAKIRA-DOUGA/KIRAKIRA-Rosales)，否则程序将不会如期工作。
-
-#### HTTP 模式
-
-尝试使用 HTTP 开发服务器，并使用**线上**后端 API。
-
-请按下键盘按键 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd>，然后选择 `npm: dev http`。
-
-您也可以在程序根目录中执行以下命令来启动：
-
-```bash
-pnpm dev-http
-```
-
-启动后，您应该能够在这个地址访问：http://localhost:3000/
+**无论如何，请务必阅读下方使用限制：**
 
 > [!WARNING]\
-> HTTP 开发服务器模式已经过测试，它一定不包含您预期中的某些功能。使用该模式运行开发服务器导致的任何后果对您没有任何好处。除非您已知晓您确实要使用该模式的意义所在之外，如无必要，任何情况下均不应使用该模式。
-
-#### HTTP 本地后端模式
-
-尝试使用 HTTP 开发服务器，并连接**本地**后端 API。
-
-请按下键盘按键 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd>，然后选择 `npm: dev http local`。
-
-您也可以在程序根目录中执行以下命令来启动：
-
-```bash
-pnpm dev-http-local
-```
-
-启动后，您应该能够在这个地址访问：http://localhost:3000/
+> 对于**预生产环境**预览模式的使用限制：\
+> 1\. 预生产环境预览模式，除开发团队成员外，任何测试、篡改行为仍将被视为滥用。\
+> 2\. 用户在预生产环境中产生的用户账户、数据等资产皆授权 KIRAKIRA 开发团队查看、修改以及再发布，不得撤销。\
+> 3\. 用户在预生产环境中的应用内购买不会生效。因使用预生产环境造成的任何人身及财产损失与 KIRAKIRA 无关。
 
 > [!WARNING]\
-> 警告同 [HTTP 模式](#HTTP-模式)。
+> 对于**生产环境**预览模式的使用限制：\
+> 1\. 您仍然在与 KIRAKIRA 官方线上环境交互，KIRAKIRA 用户协议及免责条款仍然适用。
+
+> [!NOTE]\
+> 目前预览模式存在 Cookie 跨域问题，您无法登录您的账户。
+
+启动**预生产环境**预览模式的命令为：
+
+```bash
+pnpm dev-stg
+```
+
+启动**生产环境**预览模式的命令为：
+
+```bash
+pnpm dev-live-demo
+```
+
+启动后，您应该能够在这个地址访问：https://localhost:3000/
+
+
+#### 自定义启动命令
+
+很多时候，预设的快取启动命令并不能满足您的需求。此时，您可以通过原始启动命令来启动服务器，并使用您的自定义参数。
+
+一个典型的自定义启动命令看起来像：
+```bash
+# 以下命令等价于 pnpm dev-local
+cross-env VITE_BACKEND_PROVIDER=localhost nuxi dev --host --https --ssl-cert server/server.cer --ssl-key server/server.key
+```
+
+启动后，您应该能够在这个地址访问：https://localhost:3000/
+
+上述命令的解析：
+1. `cross-env`\
+  设置跨平台的环境变量，确保命令在不同操作系统（如 Windows 和 Linux）下都能正常执行。
+2. `VITE_BACKEND_PROVIDER=localhost`\
+  注入一个名为 `VITE_BACKEND_PROVIDER` 的环境变量，其值为 `localhost`，表明使用本地后端 API。\
+  除了 `localhost`，该环境变量的值还可以为 `staging`，表明使用预生产后端。您也可以不提供该环境变量，表明使用生产后端。
+3. `nuxi dev`\
+  启动 Nuxt 的开发服务器。可选参数可以参考[这篇官方文档](https://nuxt.com/docs/api/commands/dev)。
+4. `--host `\
+  在 `--host` 后没有指定参数，表示开发服务器监听所有主机。详情请参见下方”在移动端网页测试和预览“章节
+5. `--https --ssl-cert server/server.cer --ssl-key server/server.key`\
+  其中，`--https` 表明启动 HTTPS。`--ssl-cert XXX.cer --ssl-key YYY.key` 指定了证书的的路径。
+
 
 #### 在移动端网页测试和预览
 
-请先使用以上几种模式开启前端开发服务器，您不应使用带有 localhost 字段的模式来启动。
+在启动开发服务器时，请确保以下任意一种情况成立：未指定 `--host` 参数，未为 `--host` 参数赋值，或将 `--host` 参数的值设置为 `0.0.0.0`。
 
 确保手机/平板与您的电脑位于同一个无线局域网下（如果条件不允许请开热点），然后使用您移动设备中的二维码扫描器扫描控制台中显示的二维码即可访问。
 
-您也可以使用移动端浏览器访问电脑所属 IP 地址。一般是：[https://192.168.\*.\*:3000/](https://192.168.*.*:3000/) 。这会在启动开发服务器时的一开始将网址显示在控制台上。
+您也可以使用移动端浏览器访问电脑所属 IP 地址。一般是：[https://192.168.\*.\*:3000/](https://192.168.*.*:3000/) 。通常该地址会在启动开发服务器后显示在控制台输出中。
 
 > [!NOTE]\
 > **查询电脑 IP 的方法：**<wbr />按 <kbd>Win</kbd> + <kbd>R</kbd>，输入 `cmd` 打开命令提示符，输入 `ipconfig` 即可查询当前电脑的 IP 地址。
-
-#### HTTPS 仅本地访问模式
-
-启动一个带有 HTTPS 支持的开发服务器，并使用**线上**后端 API。该模式仅限开发服务器本机使用，同局域网下其它设备无法访问。用以解决某些不可名状的 SSR 错误。
-
-请按下键盘按键 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd>，然后选择 `npm: dev localhost`。
-
-您也可以在程序根目录中执行以下命令来启动：
-
-```bash
-pnpm dev-localhost
-```
-
-启动后，您应该能够在这个地址访问：https://localhost:3000/
-
-以上方式会开启 HTTPS，以便浏览器提供 HTTPS 特有的功能及安全性。
-
-在首次访问时会弹出“此站点不安全”的警告，这是正常现象，选择“仍然访问”即可。
-
-#### HTTPS 仅本地访问、本地后端模式
-
-启动一个带有 HTTPS 支持的开发服务器，并连接**本地**后端 API。该模式仅限开发服务器本机使用，同局域网下其它设备无法访问。用以解决某些不可名状的 SSR 错误。
-
-请按下键盘按键 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd>，然后选择 `npm: dev local localhost`。
-
-您也可以在程序根目录中执行以下命令来启动：
-
-```bash
-pnpm dev-local-localhost
-```
-
-启动后，您应该能够在这个地址访问：https://localhost:3000/
-
-以上方式会开启 HTTPS，以便浏览器提供 HTTPS 特有的功能及安全性。
-
-在首次访问时会弹出“此站点不安全”的警告，这是正常现象，选择“仍然访问”即可。
-
-#### HTTP 仅本地访问模式
-
-尝试使用 HTTP 开发服务器，并使用**线上**后端 API。该模式仅限开发服务器本机使用，同局域网下其它设备无法访问。用以解决某些不可名状的 SSR 错误。
-
-请按下键盘按键 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd>，然后选择 `npm: dev http localhost`。
-
-您也可以在程序根目录中执行以下命令来启动：
-
-```bash
-pnpm dev-http-localhost
-```
-
-启动后，您应该能够在这个地址访问：http://localhost:3000/
-
-> [!WARNING]\
-> 警告同 [HTTP 模式](#HTTP-模式)。
-
-#### HTTP 仅本地访问、本地后端模式
-
-尝试使用 HTTP 开发服务器，并连接**本地**后端 API。该模式仅限开发服务器本机使用，同局域网下其它设备无法访问。用以解决某些不可名状的 SSR 错误。
-
-请按下键盘按键 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd>，然后选择 `npm: dev http local localhost`。
-
-您也可以在程序根目录中执行以下命令来启动：
-
-```bash
-pnpm dev-http-local-localhost
-```
-
-启动后，您应该能够在这个地址访问：http://localhost:3000/
-
-> [!WARNING]\
-> 警告同 [HTTP 模式](#HTTP-模式)。
 
 ### 生产
 

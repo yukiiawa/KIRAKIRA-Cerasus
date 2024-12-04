@@ -8,6 +8,8 @@ export const environment = {
 	get client() { return process.client; },
 	/** 是否是生产环境下？ */
 	get production() { return process.env.NODE_ENV === "production"; },
+	/** 是否是预生产环境下？ */
+	get staging() { return process.env.VITE_BACKEND_PROVIDER === "staging"; },
 	/** 是否是开发环境下？ */
 	get development() { return process.env.NODE_ENV === "development"; },
 	/** 是否使用本地运行的后端环境进行开发？ */
