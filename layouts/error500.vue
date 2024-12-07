@@ -1,5 +1,4 @@
 <script setup lang="ts">
-	const qrcode = "/static/images/qrcodes/kirakira_cerasus_issues.png";
 	import { httpResponseStatusCodes } from "helpers/http-status";
 	const props = defineProps<{
 		statusCode: number | string;
@@ -24,8 +23,7 @@
 			</div>
 			<div class="card-bottom">
 				<div class="bottom-left">
-					<!-- <LogoLuXun class="qrcode" /> -->
-					<NuxtImg :src="qrcode" class="qrcode" />
+					<LogoAira class="qrcode" />
 					<div class="title">
 						<h1>{{ statusCode }}</h1>
 						<p>{{ title }}</p>
@@ -93,6 +91,7 @@
 					margin-bottom: 6px;
 					font-size: 32px;
 					font-weight: 100;
+					text-align: right;
 				}
 			}
 
@@ -117,11 +116,13 @@
 					font-size: 26px;
 					font-weight: bold;
 					line-height: 1.5em;
+					white-space: nowrap;
 				}
 			}
 
 			.qrcode {
 				@include square(156px);
+				align-self: center;
 			}
 		}
 
