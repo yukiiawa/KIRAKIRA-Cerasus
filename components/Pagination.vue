@@ -358,12 +358,6 @@
 	:comp {
 		position: relative;
 		user-select: none;
-
-		&,
-		:deep(*) {
-			// stylelint-disable-next-line property-no-unknown
-			font-variant-emoji: emoji;
-		}
 	}
 
 	.thumb {
