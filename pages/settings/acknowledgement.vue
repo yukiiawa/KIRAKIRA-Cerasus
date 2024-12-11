@@ -30,7 +30,7 @@
 	<div>
 		<Subheader icon="link">{{ t.friendly_links }}</Subheader>
 		<template v-for="section, title in links" :key="title">
-			<Subheader class="section" :style="{ '--i': section[0]?.index }">{{ title }}</Subheader>
+			<header class="section" :style="{ '--i': section[0]?.index }">{{ title }}</header>
 			<div class="links lite-links">
 				<!-- eslint-disable-next-line vue/no-v-html -->
 				<a v-for="{ logo, href, index } in section" :key="href" target="_blank" :style="{ '--i': index }" :href v-html="logo"></a>
@@ -43,10 +43,30 @@
 	$delay: 250ms;
 	$item-height: 64px;
 
+	header.section {
+		margin-block: 1.35rem 0.65rem;
+		color: c(accent);
+		font-family: $english-logo-fonts;
+		font-size: 20px;
+		font-weight: 600;
+		text-align: center;
+		
+		&:first-of-type {
+			margin-block-start: 0;
+		}
+		
+		&::before,
+		&::after {
+			content: "\2013";
+			margin-inline: 1rem;
+		}
+	}
+
 	.links {
 		display: flex;
-		flex-direction: column;
-		gap: 1rem;
+		flex-flow: row wrap;
+		gap: 1rem 2.5rem;
+		justify-content: center;
 
 		a {
 			display: flex;

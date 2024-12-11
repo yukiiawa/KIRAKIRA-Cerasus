@@ -56,7 +56,7 @@
 
 	watch(() => props.files, files => {
 		const file = files[0];
-		const basename = path.filenameWithoutExtension(file.name);
+		const basename = path.fileRoot(file.name);
 		title.value = basename;
 	}, { immediate: true });
 
