@@ -11,13 +11,14 @@ export default function getCorrectUri() {
 	 * 例如，当 staging 或 production 为真时，即使 localBackend 为真，也不会使用本地后端。
 	 */
 
-	const { production, staging, localBackend } = environment;
+	const { production: isProduction, staging: isStaging, localBackend: isLocalBackend } = environment;
+	const LOCAL_BACKEND_URI = "https://localhost:9999";
 
-	let backendUrl = "https://localhost:3000/api" // 开发环境，直接代理使用真实后端服务器。
+	let backendUrl = LOCAL_BACKEND_URI // 默认使用本地开发服务器。
 
-	if (localBackend) backendUrl = "https://localhost:9999" // 开发环境，使用本地后端服务器。
-	if (staging) backendUrl = "https://stg-rosales.kirafile.com" // 预生产环境，使用预生产后端服务器。
-	if (production) backendUrl = "https://rosales.kirakira.moe" // 生产环境，使用生产后端服务器。
+	if (isLocalBackend) backendUrl = LOCAL_BACKEND_URI // 开发环境，使用本地后端服务器。
+	if (isStaging) backendUrl = "https://stg-rosales.kirafile.com" // 预生产环境，使用预生产后端服务器。
+	if (isProduction) backendUrl = "https://rosales.kirakira.moe" // 生产环境，使用生产后端服务器。
 
 	return backendUrl;
 }

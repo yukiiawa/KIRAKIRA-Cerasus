@@ -20,7 +20,7 @@
 		return Number.isFinite(uid) ? `/user/${uid}` : props.link;
 	});
 
-	const provider = computed(() => props.avatar?.startsWith("blob:http") ? undefined : "kirakira");
+	const provider = computed(() => props.avatar?.startsWith("blob:http") ? undefined : environment.cloudflareImageProvider);
 </script>
 
 <template>

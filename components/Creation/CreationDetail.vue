@@ -27,8 +27,8 @@
 	function downloadCover() {
 		if (props.cover) {
 			const image = useImage();
-			const IMAGE_MAX_WIDTH = 999999, KIRAKIRA_IMAGE_PROVIDER = "kirakira";
-			window.open(image(props.cover, { width: IMAGE_MAX_WIDTH }, { provider: KIRAKIRA_IMAGE_PROVIDER }), "_blank"); // TODO: 先暂时改为在新标签页中直接打开图片的样式，而非下载图片
+			const IMAGE_MAX_WIDTH = 999999;
+			window.open(image(props.cover, { width: IMAGE_MAX_WIDTH }, { provider: environment.cloudflareImageProvider }), "_blank"); // TODO: 先暂时改为在新标签页中直接打开图片的样式，而非下载图片
 			// downloadFile(props.cover, `${props.title} (kv${props.videoId})`);
 		} else useToast("无法查看封面!", "error"); // TODO 使用多语言
 	}
@@ -88,8 +88,8 @@
 	}
 
 	h1 {
-		font-weight: bold;
 		font-size: 24px;
+		font-weight: bold;
 		user-select: text;
 	}
 
@@ -99,10 +99,10 @@
 		gap: 8px;
 
 		.add-tag {
+			aspect-ratio: 1 / 1;
 			padding: 6px;
 			color: c(icon-color);
 			font-size: 18px;
-			aspect-ratio: 1 / 1;
 		}
 	}
 

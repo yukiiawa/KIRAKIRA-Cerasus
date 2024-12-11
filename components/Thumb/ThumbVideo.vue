@@ -44,7 +44,7 @@
 			<div class="cover-wrapper">
 				<NuxtImg
 					v-if="image"
-					provider="kirakira"
+					:provider="environment.cloudflareImageProvider"
 					:src="image"
 					alt="cover"
 					class="cover"
