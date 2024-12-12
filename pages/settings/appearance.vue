@@ -58,115 +58,121 @@
 </script>
 
 <template>
-	<Flyout v-model="flyoutColorPicker" class="color-picker-flyout">
-		<div class="color-picker-wrapper">
-			<ColorPicker v-model="customColor" />
+	<div>
+		<Flyout v-model="flyoutColorPicker" class="color-picker-flyout">
+			<div class="color-picker-wrapper">
+				<ColorPicker v-model="customColor" />
+			</div>
+		</Flyout>
+
+		<Subheader icon="brightness_medium">{{ t.scheme }}</Subheader>
+		<div class="chip sample">
+			<PlayerVideoController :currentTime="30" :duration="110" :buffered="[[0, 60]]" />
 		</div>
-	</Flyout>
+		<section grid class="theme-type">
+			<SettingsGridItem
+				v-for="item in themeList"
+				:id="item"
+				:key="item"
+				v-model="cookieThemeType"
+				:title="t.scheme[item]"
+				:ripple="false"
+			>
+				<LogoThemePreview :theme="item" />
+			</SettingsGridItem>
+		</section>
 
-	<Subheader icon="brightness_medium">{{ t.scheme }}</Subheader>
-	<div class="chip sample">
-		<PlayerVideoController :currentTime="30" :duration="110" :buffered="[[0, 60]]" />
-	</div>
-	<section grid class="theme-type">
-		<SettingsGridItem
-			v-for="item in themeList"
-			:id="item"
-			:key="item"
-			v-model="cookieThemeType"
-			:title="t.scheme[item]"
-			:ripple="false"
-		>
-			<LogoThemePreview :theme="item" />
-		</SettingsGridItem>
-	</section>
+		<Subheader icon="palette">{{ t.palette }}</Subheader>
+		<section ref="paletteSection" grid force-multi-column>
+			<SettingsGridItem
+				v-for="item in paletteList"
+				:id="item.color"
+				:key="item.color"
+				v-model="cookieThemeColor"
+				:title="t.palette[item.color]"
+				class="force-color"
+				:class="[item.color]"
+			>
+				<div class="palette-card">
+					<NuxtImg
+						:src="getPaletteImage(item.color)"
+						alt="Is the Order a Rabbit?"
+						format="avif"
+						width="320px"
+						height="180px"
+						fit="outside"
+					/>
+					<div class="overlay light"></div>
+					<div class="overlay color"></div>
+					<div>
+						<h3>{{ t.palette[item.color] }}</h3>
+						<p lang="ja">{{ item.subtitle }}</p>
+					</div>
+					<Icon name="palette" />
+				</div>
+			</SettingsGridItem>
+			<SettingsGridItem
+				id="custom"
+				key="custom"
+				v-model="cookieThemeColor"
+				:title="t.custom"
+				class="custom-color"
+				@click="e => flyoutColorPicker = [e]"
+			>
+				<div class="palette-card">
+					<div class="hue-gradient"></div>
+					<div>
+						<h3>{{ t.custom }}</h3>
+						<p>Make It Yours</p>
+					</div>
+					<Icon name="edit" />
+				</div>
+			</SettingsGridItem>
+		</section>
 
-	<Subheader icon="palette">{{ t.palette }}</Subheader>
-	<section ref="paletteSection" grid>
-		<SettingsGridItem
-			v-for="item in paletteList"
-			:id="item.color"
-			:key="item.color"
-			v-model="cookieThemeColor"
-			:title="t.palette[item.color]"
-			class="force-color"
-			:class="[item.color]"
-		>
-			<div class="content">
-				<NuxtImg
-					:src="getPaletteImage(item.color)"
-					alt="Is the Order a Rabbit?"
-					format="avif"
-					width="320px"
-					height="180px"
-					fit="outside"
-				/>
-				<div class="overlay light"></div>
-				<div class="overlay color"></div>
-				<h3>{{ t.palette[item.color] }}</h3>
-				<p lang="ja">{{ item.subtitle }}</p>
-				<Icon name="palette" />
-			</div>
-		</SettingsGridItem>
-		<SettingsGridItem
-			id="custom"
-			key="custom"
-			v-model="cookieThemeColor"
-			:title="t.custom"
-			class="custom-color"
-			@click="e => flyoutColorPicker = [e]"
-		>
-			<div class="content">
-				<div class="hue-gradient"></div>
-				<h3>{{ t.custom }}</h3>
-				<p>Make It Yours</p>
-				<Icon name="edit" />
-			</div>
-		</SettingsGridItem>
-	</section>
-
-	<Subheader icon="wallpaper">{{ t.background }}</Subheader>
-	<section>
-		<FilePicker v-model="backgroundImageFiles" accept="image/*" cover :unselectedText="t.unselected.image" />
-		<template v-if="backgroundImageFile">
-			<SettingsSlider
-				v-model="backgroundImageSettingsStore.opacity"
-				:min="0"
-				:max="0.4"
-				:step="0.01"
-				:defaultValue="0.2"
-				icon="opacity"
-				pending="current"
-				:displayValue="backgroundSliderDisplayValue"
-			>{{ t.background.opacity }}</SettingsSlider>
-			<SettingsSlider
-				v-model="backgroundImageSettingsStore.tint"
-				:min="0"
-				:max="1"
-				:step="0.01"
-				:defaultValue="0.75"
-				icon="opacity"
-				pending="current"
-				:displayValue="backgroundSliderDisplayValue"
-			>{{ t.background.tint }}</SettingsSlider>
-			<SettingsSlider
-				v-model="backgroundImageSettingsStore.blur"
-				:min="0"
-				:max="64"
-				:step="1"
-				:defaultValue="0"
-				icon="opacity"
-				pending="current"
-				:displayValue="backgroundSliderDisplayValue"
-			>{{ t.background.blurIntensity }}</SettingsSlider>
+		<Subheader icon="wallpaper">{{ t.background }}</Subheader>
+		<section>
+			<FilePicker v-model="backgroundImageFiles" accept="image/*" cover :unselectedText="t.unselected.image" />
+			<template v-if="backgroundImageFile">
+				<SettingsSlider
+					v-model="backgroundImageSettingsStore.opacity"
+					:min="0"
+					:max="0.4"
+					:step="0.01"
+					:defaultValue="0.2"
+					icon="opacity"
+					pending="current"
+					:displayValue="backgroundSliderDisplayValue"
+				>{{ t.background.opacity }}</SettingsSlider>
+				<SettingsSlider
+					v-model="backgroundImageSettingsStore.tint"
+					:min="0"
+					:max="1"
+					:step="0.01"
+					:defaultValue="0.75"
+					icon="opacity"
+					pending="current"
+					:displayValue="backgroundSliderDisplayValue"
+				>{{ t.background.tint }}</SettingsSlider>
+				<SettingsSlider
+					v-model="backgroundImageSettingsStore.blur"
+					:min="0"
+					:max="64"
+					:step="1"
+					:defaultValue="0"
+					icon="opacity"
+					pending="current"
+					:displayValue="backgroundSliderDisplayValue"
+				>{{ t.background.blurIntensity }}</SettingsSlider>
 			<!-- TODO: 滑块上方的气泡定位有问题。 -->
-		</template>
-	</section>
+			</template>
+		</section>
 
-	<Subheader icon="more_horiz">{{ t(2).other }}</Subheader>
-	<section list>
-		<ToggleSwitch v-model="cookieColoredSidebar" v-ripple icon="dehaze">{{ t.appearance.colorful_navbar }}</ToggleSwitch>
-	</section>
+		<Subheader icon="more_horiz">{{ t(2).other }}</Subheader>
+		<section list>
+			<ToggleSwitch v-model="cookieColoredSidebar" v-ripple icon="dehaze">{{ t.appearance.colorful_navbar }}</ToggleSwitch>
+		</section>
+	</div>
 </template>
 
 <style scoped lang="scss">
@@ -187,18 +193,19 @@
 		--size: small;
 	}
 
-	.settings-grid-item:deep {
+	.settings-grid-item:deep() {
 		.ripple-circle {
 			z-index: 4;
 			background-color: c(accent-ripple);
 		}
 	}
 
-	.content {
+	.palette-card {
 		@include square(100%);
 		display: flex;
 		flex-direction: column;
-		padding: 18px 20px;
+		justify-content: space-between;
+		padding: 14px 16px;
 		color: c(accent);
 
 		.custom-color & {
@@ -211,17 +218,28 @@
 
 		.icon,
 		h3 {
-			margin-bottom: calc(2px + 0.1cqh);
 			font-size: calc(16px + 4cqw);
+		}
+
+		h3 {
+			margin-bottom: calc(2px + 0.1cqh);
+
+			@include mobile {
+				display: none;
+			}
 		}
 
 		p {
 			font-size: calc(14px + 1cqw);
+
+			@include mobile {
+				font-weight: bold;
+			}
 		}
 
 		.icon {
 			display: block;
-			margin-top: auto;
+			margin-top: calc(8px + 0.1cqh);
 		}
 
 		img,

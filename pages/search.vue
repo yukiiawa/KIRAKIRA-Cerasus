@@ -5,7 +5,7 @@
 	const tagSearch = computed(() => {
 		const tagIds = route.query.tagId;
 		if (Array.isArray(tagIds))
-			return tagIds.map(tagId => parseInt(tagId, 10));
+			return tagIds.map(tagId => parseInt(tagId!, 10));
 		else if (typeof tagIds === "string")
 			return [parseInt(tagIds, 10)];
 		else
@@ -47,7 +47,7 @@
 		const videoResult = await api.video.searchVideoByKeyword(searchVideoByKeywordRequest);
 		if (videoResult && videoResult.success) {
 			videos.value = videoResult;
-			data.pages = Math.floor(videoResult.videosCount / 50) + 1;
+			data.pages = Math.max(1, Math.ceil(videoResult.videosCount / 50));
 		}
 	}
 
@@ -60,7 +60,7 @@
 		const videoResult = await api.video.searchVideoByTagIds(searchVideoByVideoTagIdRequest);
 		if (videoResult && videoResult.success) {
 			videos.value = videoResult;
-			data.pages = Math.floor(videoResult.videosCount / 50) + 1;
+			data.pages = Math.max(1, Math.ceil(videoResult.videosCount / 50));
 		}
 	}
 
@@ -71,7 +71,7 @@
 		const videoResult = await api.video.getHomePageThumbVideo();
 		if (videoResult && videoResult.success) {
 			videos.value = videoResult;
-			data.pages = Math.floor(videoResult.videosCount / 50) + 1;
+			data.pages = Math.max(1, Math.ceil(videoResult.videosCount / 50));
 		}
 	}
 
@@ -128,7 +128,7 @@
 		switch (searchMode.value) {
 			case "keyword": {
 				if (query)
-					await searchVideoByKeyword(query);
+					await searchVideoByKeyword(query as string);
 				else
 					await getHomeVideo();
 				break;

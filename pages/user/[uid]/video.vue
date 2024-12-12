@@ -3,7 +3,16 @@
 	const sort = ref<SortModel>(["date", "descending"]);
 
 	const route = useRoute();
-	const urlUid = computed(currentUserUid);
+
+	const urlUid = ref();
+	// SSR
+	urlUid.value = currentUserUid();
+	// CSR
+	const nuxtApp = useNuxtApp();
+	nuxtApp.hook("page:finish", () => {
+		urlUid.value = currentUserUid();
+	});
+
 	const videos = ref<GetVideoByUidResponseDto>();
 	const { query } = route;
 
@@ -25,7 +34,7 @@
 				uid: urlUid.value,
 			};
 			const videosResponse = await api.video.getVideoByUid(getVideoByUidRequest);
-			pages.value = Math.ceil(videosResponse.videosCount / 50);
+			pages.value = Math.max(1, Math.ceil(videosResponse.videosCount / 50));
 			videos.value = videosResponse;
 		} catch (error) { console.error(error); }
 	}

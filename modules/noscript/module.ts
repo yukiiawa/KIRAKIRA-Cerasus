@@ -26,5 +26,10 @@ export default defineNuxtModule({
 			route: NOSCRIPT_ROUTE,
 			handler: resolve("route"),
 		});
+
+		addServerHandler({
+			route: "/issues",
+			handler: resolve("route-issues"),
+		});
 	},
 });

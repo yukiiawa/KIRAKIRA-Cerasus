@@ -286,6 +286,7 @@
 			 * 监听首次加载完毕。
 			 */
 			eventManager.listenOnce(video.value, "canplaythrough", () => {
+				currentTime.value = video.value!.currentTime;
 				splash.value = false;
 			});
 

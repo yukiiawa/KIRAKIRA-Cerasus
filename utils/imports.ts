@@ -4,4 +4,4 @@
 
 export { createReusableTemplate } from "@vueuse/core";
 export { Editor } from "@tiptap/vue-3";
-export { default as path } from "@kirakira/path-browserify";
+export { default as path } from "path-browserify-es";

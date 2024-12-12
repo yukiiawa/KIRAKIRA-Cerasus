@@ -1,5 +1,13 @@
 <script setup lang="ts">
-	const urlUid = computed(currentUserUid);
+	const urlUid = ref();
+	// SSR
+	urlUid.value = currentUserUid();
+	// CSR
+	const nuxtApp = useNuxtApp();
+	nuxtApp.hook("page:finish", () => {
+		urlUid.value = currentUserUid();
+	});
+
 	const userBirthday = ref(0);
 	const userJoinDate = ref(0);
 	const userId = ref<number>();
@@ -50,7 +58,7 @@
 		} catch (error) { console.error(error); }
 	}
 	watch(urlUid, fetchData, { deep: true });
-	fetchData(); // WARN 为什么在此处使用 await 会导致第二次进入用户主页时，Vue 卡死
+	await fetchData();
 </script>
 
 <template>

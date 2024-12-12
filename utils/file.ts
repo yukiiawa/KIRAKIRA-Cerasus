@@ -16,16 +16,6 @@ export function urlToBlob_legacy(url: string, callback: (blob: Blob) => void) {
 }
 
 /**
- * 获取不带扩展名的文件名。
- * @deprecated 已弃用，请使用改写的 path-browserify 库的同名函数。
- * @param filePath - 文件名或文件路径。
- * @returns 纯文件名。
- */
-export function filenameWithoutExtension(filePath: string) {
-	return path.parse(filePath).name;
-}
-
-/**
  * 文件转 Blob: 链接。
  * @param file - 文件。
  * @returns Blob: 链接。

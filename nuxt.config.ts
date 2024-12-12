@@ -16,7 +16,7 @@ const dev = environment.development;
 
 export default defineNuxtConfig({
 	devtools: {
-		enabled: true,
+		enabled: false,
 	},
 
 	plugins: [
@@ -257,6 +257,7 @@ export default defineNuxtConfig({
 			"./plugins/postcss/any-hover": true,
 			"./plugins/postcss/lang-latin": true,
 			"postcss-combine-media-query": false,
+			"postcss-viewport-unit-fallback": true,
 		},
 	},
 
@@ -276,10 +277,10 @@ export default defineNuxtConfig({
 	},
 
 	app: {
-		/* pageTransition: {
-						name: "page-jump",
-						mode: "out-in",
-		}, */
+		pageTransition: {
+			name: "page-jump",
+			mode: "out-in",
+		},
 		rootId: "root",
 		teleportId: "popovers",
 	},
@@ -288,6 +289,8 @@ export default defineNuxtConfig({
 		public: {
 			/** Cloudflare MPD 视频清单 URL 模板，其中 "{videoId}" 部分将会被替换为真实的视频 ID */
 			cloudflareMpdVideoUrlTemplate: "https://customer-yvgxn6arnuae3q89.cloudflarestream.com/{videoId}/manifest/video.mpd",
+			gitBranch: process.env.VERCEL_GIT_COMMIT_REF,
+			gitCommit: process.env.VERCEL_GIT_COMMIT_SHA,
 		},
 	},
 

@@ -2,6 +2,8 @@
 	const nuxt = useNuxtApp();
 	const isDevMode = inject<Ref<boolean>>("isDevMode");
 
+	const { gitBranch, gitCommit } = useRuntimeConfig().public;
+
 	const repositories: { name: string; codeName?: string; link: string; icon?: string }[] = [
 		{ name: t.about.repositories.frontend, codeName: "KIRAKIRA Cerasus", link: "https://github.com/KIRAKIRA-DOUGA/KIRAKIRA-Cerasus" },
 		{ name: t.about.repositories.backend, codeName: "KIRAKIRA Rosales", link: "https://github.com/KIRAKIRA-DOUGA/KIRAKIRA-Rosales" },
@@ -65,70 +67,99 @@
 </script>
 
 <template>
-	<Contents>
-		<div class="info" @click="showDevMode">
-			<LogoText />
-			<p class="slogan"><span>{{ sloganLines[0] }}</span><span><b>{{ sloganLines[1] }}</b></span></p>
-		</div>
-	</Contents>
+	<div>
+		<Contents>
+			<div class="info">
+				<div class="product" @click="showDevMode">
+					<LogoText />
+					<p class="slogan"><span>{{ sloganLines[0] }}</span><span><b>{{ sloganLines[1] }}</b></span></p>
+				</div>
+				<div class="version">
+					<template v-if="gitBranch && gitCommit">
+						<div>
+							<Icon name="branch" /><span>{{ gitBranch }}</span>
+						</div>
+						<div>
+							<Icon name="commit" /><span>{{ gitCommit.slice(0, 7) }}</span>
+						</div>
+					</template>
+					<template v-else>
+						<div>
+							<Icon name="code" /><span>Frontend Development Mode</span>
+						</div>
+						<div v-if="environment.localBackend">
+							<Icon name="server" /><span>Local Backend</span>
+						</div>
+					</template>
+				</div>
+			</div>
+		</Contents>
 
-	<Subheader icon="link">{{ t.about.repositories }}</Subheader>
-	<section>
-		<SettingsChipItem
-			v-for="repo in repositories"
-			:key="repo.name"
-			:icon="repo.icon || 'mono-logo/github'"
-			:details="repo.codeName"
-			:href="repo.link"
-			trailingIcon="open_in_new"
-		>{{ repo.name }}</SettingsChipItem>
-	</section>
+		<Subheader icon="link">{{ t.about.repositories }}</Subheader>
+		<section>
+			<SettingsChipItem
+				v-for="repo in repositories"
+				:key="repo.name"
+				:icon="repo.icon || 'mono-logo/github'"
+				:details="repo.codeName"
+				:href="repo.link"
+				trailingIcon="open_in_new"
+			>{{ repo.name }}</SettingsChipItem>
+		</section>
 
-	<Subheader icon="people">{{ t.about.team }}</Subheader>
-	<section>
-		<SettingsChipItem
-			v-for="staff in team"
-			:key="staff.username"
-			:image="staff.avatar"
-			icon="account_circle"
-			:details="`${staff.job.join(' / ')} - UID ${staff.uid}`"
-			trailingIcon="open_in_new"
-			:href="`/user/${staff.uid}`"
-		>
-			<span class="nickname">{{ staff.nickname }}</span>
-			<span class="username">@{{ staff.username }}</span>
-		</SettingsChipItem>
-	</section>
+		<Subheader icon="people">{{ t.about.team }}</Subheader>
+		<section>
+			<SettingsChipItem
+				v-for="staff in team"
+				:key="staff.username"
+				:image="staff.avatar"
+				icon="account_circle"
+				:details="`${staff.job.join(' / ')} - UID ${staff.uid}`"
+				trailingIcon="open_in_new"
+				:href="`/user/${staff.uid}`"
+			>
+				<span class="nickname">{{ staff.nickname }}</span>
+				<span class="username">@{{ staff.username }}</span>
+			</SettingsChipItem>
+		</section>
 
-	<Subheader icon="build">{{ t.about.technologies_used }}</Subheader>
-	<section>
-		<SettingsChipItem
-			v-for="tech in technologies"
-			:key="tech.name"
-			:icon="tech.icon ? 'colored-logo/' + tech.icon : 'placeholder'"
-			:filled="!tech.monochrome"
-			:details="tech.version ? `${tech.ability} - v${tech.version}` : tech.ability"
-			:href="tech.link"
-			trailingIcon="open_in_new"
-		>{{ tech.name }}</SettingsChipItem>
-	</section>
+		<Subheader icon="build">{{ t.about.technologies_used }}</Subheader>
+		<section>
+			<SettingsChipItem
+				v-for="tech in technologies"
+				:key="tech.name"
+				:icon="tech.icon ? 'colored-logo/' + tech.icon : 'placeholder'"
+				:filled="!tech.monochrome"
+				:details="tech.version ? `${tech.ability} - v${tech.version}` : tech.ability"
+				:href="tech.link"
+				trailingIcon="open_in_new"
+			>{{ tech.name }}</SettingsChipItem>
+		</section>
+	</div>
 </template>
 
 <style scoped lang="scss">
 	.info {
 		display: flex;
 		flex-direction: column;
-		gap: 1rem;
+		gap: 2rem;
 		align-items: center;
 		margin: 3rem 0;
 		animation: none;
+	}
+
+	.product {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		align-items: center;
 
 		> * {
-			animation: float-up 600ms $ease-out-smooth backwards;
+			animation: float-up 800ms $ease-out-smooth backwards;
 
 			@for $i from 1 through 2 {
 				&:nth-child(#{$i}) {
-					animation-delay: 150ms * ($i - 1);
+					animation-delay: 100ms * ($i - 1);
 				}
 			}
 		}
@@ -157,6 +188,33 @@
 		}
 	}
 
+	.version {
+		@include round-small;
+		display: flex;
+		gap: 16px;
+		justify-content: center;
+		align-items: center;
+		padding: 8px 16px;
+		color: c(accent);
+		background-color: c(accent-hover-overlay);
+		animation: float-up 800ms 200ms $ease-out-smooth backwards;
+
+		> div {
+			display: flex;
+			gap: 4px;
+			align-items: center;
+
+			> .icon {
+				font-size: 16px;
+			}
+
+			> span {
+				font-size: 13px;
+				user-select: text;
+			}
+		}
+	}
+
 	.nickname {
 		font-weight: bold;
 	}
@@ -168,7 +226,7 @@
 
 	@keyframes float-up {
 		from {
-			translate: 0 1rem;
+			translate: 0 5rem;
 			opacity: 0;
 		}
 	}
