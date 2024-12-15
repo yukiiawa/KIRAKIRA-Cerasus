@@ -68,9 +68,8 @@ KIRAKIRA Cerasus 的开发服务器具有多种模式供您选择。\
 
 启动一个带有 HTTPS 支持的开发服务器，并使用**本地**后端 API。
 
-通过此方式启动的开发服务器，连接的是您本地的后端 API。您浏览或发布的内容由您自行管理，与 KIRAKIRA 无关。\
+通过此方式启动的开发服务器，连接的是您本地的后端 API。您产生的数据由您自行管理，与 KIRAKIRA 无关。\
 您需要额外运行 [KIRAKIRA-Rosales 后端服务](https://github.com/KIRAKIRA-DOUGA/KIRAKIRA-Rosales)，否则程序将不会如期工作。
-
 
 请按下键盘按键 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd>，然后选择 `npm: dev local`。
 
@@ -79,6 +78,12 @@ KIRAKIRA Cerasus 的开发服务器具有多种模式供您选择。\
 ```bash
 pnpm dev-local
 ```
+
+> [!WARNING]\
+> 虽然您连接了本地后端，但仍会向官方提供的预生产环境 Cloudflare Images 服务请求图片资源文件，并在视频上传时使用官方预生产环境的 Cloudflare Stream 子域名模板。如果您想要使用您自己的 Cloudflare Images 和 Cloudflare Stream 服务，请参考下方的“自定义启动命令”章节。
+
+> [!WARNING]\
+> 对于有生产环境访问权限的开发者，您也可以使用 `pnpm run dev-local-prod` 命令来连接生产环境的 Cloudflare Images 和 Cloudflare Stream 服务。
 
 启动后，您应该能够在这个地址访问：https://localhost:3000/
 
@@ -105,7 +110,7 @@ KIRAKIRA 拥有**预**生产环境和生产环境两个线上后端，预生产�
 启动**预生产环境**演示模式的命令为：
 
 ```bash
-pnpm dev-stg
+pnpm dev-stg-demo
 ```
 
 启动**生产环境**演示模式的命令为：
@@ -124,7 +129,7 @@ pnpm dev-live-demo
 一个典型的自定义启动命令看起来像：
 ```bash
 # 以下命令等价于 'pnpm dev-local'
-cross-env VITE_BACKEND_PROVIDER=localhost nuxi dev --host --https --ssl-cert server/server.cer --ssl-key server/server.key
+pnpm cross-env VITE_BACKEND_URI=https://localhost:9999 VITE_CLOUDFLARE_IMAGES_PROVIDER=cloudflare-stg VITE_CLOUDFLARE_STREAM_CUSTOMER_SUBDOMAIN=https://customer-o9xrvgnj5fidyfm4.cloudflarestream.com/ nuxi dev --host --https --ssl-cert server/server.cer --ssl-key server/server.key
 ```
 
 启动后，您应该能够在这个地址访问：https://localhost:3000/
@@ -132,14 +137,20 @@ cross-env VITE_BACKEND_PROVIDER=localhost nuxi dev --host --https --ssl-cert ser
 上述命令的解析：
 1. `cross-env`\
   设置跨平台的环境变量，确保命令在不同操作系统（如 Windows 和 Linux）下都能正常执行。
-2. `VITE_BACKEND_PROVIDER=localhost`\
-  注入一个名为 `VITE_BACKEND_PROVIDER` 的环境变量，其值为 `localhost`，表明使用本地后端 API。\
-  除了 `localhost`，该环境变量的值还可以为 `staging`，表明使用预生产后端。您也可以不提供该环境变量，表明使用生产后端。
-3. `nuxi dev`\
+2. `VITE_BACKEND_URI=https://localhost:9999`\
+  注入一个名为 `VITE_BACKEND_URI` 的环境变量，其值为 `https://localhost:9999`，即后端 API 的 URI。
+3. `VITE_CLOUDFLARE_IMAGES_PROVIDER=cloudflare-stg`
+  注入一个名为 `VITE_CLOUDFLARE_IMAGES_PROVIDER` 的环境变量，其值为 `cloudflare-stg`。\
+  这代表您使用名为 `cloudflare-stg` 的 [NuxtImage Custom Provider](https://image.nuxt.com/advanced/custom-provider)。\
+  如需修改 NuxtImage Custom Provider 的配置，请前往根目录中的 `nuxt.config.ts` 中 `image.providers` 部分。
+4. `VITE_CLOUDFLARE_STREAM_CUSTOMER_SUBDOMAIN=https://custom...stream.com/`\
+  注入一个名为 `VITE_CLOUDFLARE_STREAM_CUSTOMER_SUBDOMAIN` 的环境变量，其值为 `https://custom...stream.com/`。\
+  该环境变量指定了 Cloudflare Stream 服务的自定义子域名。
+5. `nuxi dev`\
   启动 Nuxt 的开发服务器。可选参数可以参考[这篇官方文档](https://nuxt.com/docs/api/commands/dev)。
-4. `--host`\
+6. `--host`\
   在 `--host` 后没有指定参数，表示开发服务器监听所有主机。详情请参见下方”在移动端网页测试和预览“章节
-5. `--https --ssl-cert server/server.cer --ssl-key server/server.key`\
+7. `--https --ssl-cert server/server.cer --ssl-key server/server.key`\
   其中，`--https` 表明启动 HTTPS。`--ssl-cert XXX.cer --ssl-key YYY.key` 指定了证书的路径。
 
 

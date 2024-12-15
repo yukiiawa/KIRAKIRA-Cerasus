@@ -1,9 +1,8 @@
 import { GET, POST } from "../Common";
-import getCorrectUri from "../Common/getCorrectUri";
 import type { EmitDanmakuRequestDto, EmitDanmakuResponseDto, GetDanmakuByKvidRequestDto, GetDanmakuByKvidResponseDto } from "./DanmakuControllerDto";
 
-const BACK_END_URL = getCorrectUri();
-const DANMAKU_API_URL = `${BACK_END_URL}/video/danmaku`;
+const BACK_END_URI = environment.backendUri;
+const DANMAKU_API_URI = `${BACK_END_URI}video/danmaku`;
 
 /**
  * 用户发送弹幕
@@ -12,7 +11,7 @@ const DANMAKU_API_URL = `${BACK_END_URL}/video/danmaku`;
  */
 export const emitDanmaku = async (emitDanmakuRequest: EmitDanmakuRequestDto): Promise<EmitDanmakuResponseDto> => {
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
-	return await POST(`${DANMAKU_API_URL}/emit`, emitDanmakuRequest, { credentials: "include" }) as EmitDanmakuResponseDto;
+	return await POST(`${DANMAKU_API_URI}/emit`, emitDanmakuRequest, { credentials: "include" }) as EmitDanmakuResponseDto;
 };
 
 /**
@@ -21,5 +20,5 @@ export const emitDanmaku = async (emitDanmakuRequest: EmitDanmakuRequestDto): Pr
  * @returns 视频的弹幕列表
  */
 export const getDanmakuByKvid = async (getDanmakuByKvidRequest: GetDanmakuByKvidRequestDto): Promise<GetDanmakuByKvidResponseDto> => {
-	return await GET(`${DANMAKU_API_URL}?videoId=${getDanmakuByKvidRequest.videoId}`) as GetDanmakuByKvidResponseDto;
+	return await GET(`${DANMAKU_API_URI}?videoId=${getDanmakuByKvidRequest.videoId}`) as GetDanmakuByKvidResponseDto;
 };

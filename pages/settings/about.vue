@@ -1,6 +1,7 @@
 <script setup lang="ts">
 	const nuxt = useNuxtApp();
 	const isDevMode = inject<Ref<boolean>>("isDevMode");
+	const isLocalBackend = computed(() => environment.backendUri.includes("https://localhost"));
 
 	const { gitBranch, gitCommit } = useRuntimeConfig().public;
 
@@ -87,7 +88,7 @@
 						<div>
 							<Icon name="code" /><span>Frontend Development Mode</span>
 						</div>
-						<div v-if="environment.localBackend">
+						<div v-if="isLocalBackend">
 							<Icon name="server" /><span>Local Backend</span>
 						</div>
 					</template>

@@ -8,43 +8,59 @@ export const environment = {
 	get client() { return process.client; },
 	/** 是否是生产环境下？ */
 	get production() { return process.env.NODE_ENV === "production"; },
-	/** 是否是预生产环境下？ */
-	get staging() { return import.meta.env.VITE_BACKEND_PROVIDER === "staging"; },
 	/** 是否是开发环境下？ */
 	get development() { return process.env.NODE_ENV === "development"; },
-	/** 是否使用本地运行的后端环境进行开发？ */
-	get localBackend() {
+	/** 后端接口 URI 地址 */
+	get backendUri() {
+		const DEFAULT_BACKEND_URI = "https://localhost:9999/";
 		try {
-			return import.meta.env.VITE_BACKEND_PROVIDER === "localhost";
+			const backendUriInput = import.meta.env.VITE_BACKEND_URI;
+			if (!backendUriInput) {
+				console.error("ERROR", "Server startup failed,  the value of the environment variable BACKEND_URL was not specified.");
+				return DEFAULT_BACKEND_URI;
+			}
+			const backendUri = new URL(backendUriInput.trim());
+			const backendUriHref = backendUri.href;
+			if (!backendUriHref) {
+				console.error("ERROR", "System startup failed, the parsed result of the environment variable BACKEND_URL is empty.");
+				return DEFAULT_BACKEND_URI;
+			}
+			return backendUriHref;
 		} catch (error) {
-			console.error("ERROR", "ERROR in environment.localBackend: ", error);
-			return false;
+			console.error("ERROR", "System startup failed, environment variable BACKEND_URL parsing failed: ", error);
+			return DEFAULT_BACKEND_URI;
 		}
 	},
 	/** cloudflare 的图片提供者的名字，生产环境时使用 cloudflare-prod，否则使用 cloudflare-stg */
-	get cloudflareImageProvider() { return process.env.NODE_ENV === "production" ? "cloudflare-prod" : "cloudflare-stg"; },
+	get cloudflareImageProvider() {
+		const provider = import.meta.env.VITE_CLOUDFLARE_IMAGES_PROVIDER;
+		if (!provider)
+			console.error("ERROR", "Server startup failed,  the value of the environment variable CLOUDFLARE_IMAGES_PROVIDER was not specified.");
+		if (provider === "cloudflare-prod" || provider === "cloudflare-stg")
+			return provider;
+		else
+			return "cloudflare-stg";
+	},
 	/** Cloudflare MPD 视频清单 URL 模板，其中 "{videoId}" 部分将会被替换为真实的视频 ID，生产和测试时使用不同的 URL */
-	get cloudflareStreamVideoMpdUrlTemplate() { return process.env.NODE_ENV === "production" ? "https://customer-yvgxn6arnuae3q89.cloudflarestream.com/{videoId}/manifest/video.mpd" : "https://customer-o9xrvgnj5fidyfm4.cloudflarestream.com/{videoId}/manifest/video.mpd"; }
+	get cloudflareStreamVideoMpdUrlTemplate() {
+		const DEFAULT_CLOUDFLARE_STREAM_SUBDOMAIN = "https://customer-o9xrvgnj5fidyfm4.cloudflarestream.com/";
+		try {
+			const subdomain = import.meta.env.VITE_CLOUDFLARE_STREAM_CUSTOMER_SUBDOMAIN;
+			if (!subdomain) {
+				console.error("ERROR", "Server startup failed,  the value of the environment variable BACKEND_URL was not specified.");
+				return DEFAULT_CLOUDFLARE_STREAM_SUBDOMAIN;
+			}
+			const subdomainUri = new URL(subdomain);
+			const subdomainUriHref = subdomainUri.href;
+			if (!subdomainUriHref) {
+				console.error("ERROR", "System startup failed, the parsed result of the environment variable BACKEND_URL is empty.");
+				return DEFAULT_CLOUDFLARE_STREAM_SUBDOMAIN;
+			}
+
+			return `${subdomainUriHref}{videoId}/manifest/video.mpd`;
+		} catch (error) {
+			console.error("ERROR", "System startup failed, environment variable BACKEND_URL parsing failed: ", error);
+			return DEFAULT_CLOUDFLARE_STREAM_SUBDOMAIN;
+		}
+	},
 };
-
-
-
-// get backendUrl() {
-
-// 	const isProduction = process.env.NODE_ENV === "production";
-// 	const isStaging = process.env.VITE_BACKEND_PROVIDER === "staging";
-// 	const isLocalBackend = import.meta.env.VITE_BACKEND_PROVIDER === "localhost"
-
-// 	let backendUrl = "https://localhost:3000/api" // 开发环境，直接代理使用真实后端服务器。
-
-// 	console.log('env', { production, staging, localBackend })
-
-// 	if (localBackend) backendUrl = "https://localhost:9999" // 开发环境，使用本地后端服务器。
-// 	if (staging) backendUrl = "https://stg-rosales.kirafile.com" // 预生产环境，使用预生产后端服务器。
-// 	if (production) backendUrl = "https://rosales.kirakira.moe" // 生产环境，使用生产后端服务器。
-
-// 	console.log('backendUrl', backendUrl)
-
-// 	return backendUrl;
-// 	return process.env.VITE_BACKEND_PROVIDER === "staging" ? "https://stg-rosales.kirafile.com" : "https://rosales.kirakira.moe"
-// }

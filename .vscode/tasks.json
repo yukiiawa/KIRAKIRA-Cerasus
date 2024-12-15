@@ -11,7 +11,7 @@
 		},
 		{
 			"type": "npm",
-			"script": "dev-stg",
+			"script": "dev-stg-demo",
 			"group": "build",
 			"problemMatcher": [],
 			"label": "npm: dev stg",
@@ -76,21 +76,21 @@
 			"script": "delete-node-modules",
 			"problemMatcher": [],
 			"label": "Delete node_modules",
-			"detail": "Delete node_modules and .nuxt - 删除 node_modules 和 .nuxt 文件夹",
+			"detail": "Delete node_modules and .nuxt - 删除 node_modules 和 .nuxt 文件夹"
 		},
 		{
 			"type": "npm",
 			"script": "crowdin:update",
 			"problemMatcher": [],
 			"label": "Crowdin: Update",
-			"detail": "Update source language file to Crowdin - 将源语言文件更新到 Crowdin",
+			"detail": "Update source language file to Crowdin - 将源语言文件更新到 Crowdin"
 		},
 		{
 			"type": "npm",
 			"script": "crowdin:download",
 			"problemMatcher": [],
 			"label": "Crowdin: Download",
-			"detail": "Download translated language file from Crowdin - 从 Crowdin 下载翻译好的语言文件",
-		},
+			"detail": "Download translated language file from Crowdin - 从 Crowdin 下载翻译好的语言文件"
+		}
 	]
 }
