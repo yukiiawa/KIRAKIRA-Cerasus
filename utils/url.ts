@@ -4,7 +4,7 @@
  * @returns Cloudflare MPD 视频清单 URL。
  */
 export function getCloudflareMpdVideoUrl(videoId: string): string {
-	const cloudflareMpdVideoUrlTemplate = environment.cloudflareStreamVideoMpdUrlTemplate as string;
+	const cloudflareMpdVideoUrlTemplate = environment.cloudflareStreamVideoMpdUrlTemplate;
 	if (videoId && typeof cloudflareMpdVideoUrlTemplate === "string" && cloudflareMpdVideoUrlTemplate)
 		try {
 			return cloudflareMpdVideoUrlTemplate.replace("{videoId}", videoId);
