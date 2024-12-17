@@ -1,12 +1,9 @@
 @use "../theme/functions" as *;
 
-a {
+a,
+a:any-link {
 	color: c(accent);
 	text-decoration: none;
-}
-
-a:where(:not(.no-visited):visited) {
-	color: c(accent-focus);
 }
 
 :not(.lite-links) > a:not(.lite) {
@@ -15,20 +12,20 @@ a:where(:not(.no-visited):visited) {
 	&:hover,
 	&:focus,
 	&:active {
-		color: c(accent-hover);
-		text-decoration: none;
-		background: var(--accent-hover-wave-link-background) repeat-x 0 100%;
-		background-size: 20px auto;
-		animation: wave-move 1s infinite linear;
+		opacity: 0.7;
+		// text-decoration: none; // TODO: 波浪动画效果因 global-colors.scss 中暂时搁置而暂时禁用。
+		// background: var(--accent-hover-wave-link-background) repeat-x 0 100%;
+		// background-size: 20px auto;
+		// animation: wave-move 1s infinite linear;
 	}
 }
 
-@keyframes wave-move {
-	from {
-		background-position: 0 100%;
-	}
+// @keyframes wave-move {
+// 	from {
+// 		background-position: 0 100%;
+// 	}
 
-	to {
-		background-position: -20px 100%;
-	}
-}
+// 	to {
+// 		background-position: -20px 100%;
+// 	}
+// }

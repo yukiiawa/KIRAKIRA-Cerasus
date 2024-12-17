@@ -34,6 +34,14 @@
 		color: white;
 		background-color: c(accent);
 
+		&:not(.lite):deep(a:any-link) {
+			color: white;
+
+			::selection {
+				background-color: c(white, 50%);
+			}
+		}
+
 		&.lite {
 			color: c(text-color);
 			background-color: c(surface-color);
@@ -44,6 +52,10 @@
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
+
+		:deep(*) {
+			user-select: text;
+		}
 	}
 
 	.title {
@@ -53,9 +65,5 @@
 
 	.icon {
 		font-size: 24px;
-	}
-
-	p {
-		user-select: text;
 	}
 </style>
