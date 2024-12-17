@@ -64,7 +64,7 @@
 							<p>{{ watchedCount }}</p>
 						</div>
 						<div class="item">
-							<Icon name="time" />
+							<Icon name="duration" />
 							<p>{{ duration }}</p>
 						</div>
 					</div>
