@@ -10,9 +10,6 @@
 </script>
 
 <script setup lang="ts">
-	import makeFullwidth from "pomsky/fullwidth.pom";
-	import LocaleLink from "components/LocaleLink.vue";
-
 	definePageMeta({
 		pageTransition: {
 			name: "page-jump",
@@ -27,32 +24,26 @@
 					const [index, prevIndex] = [tabs.findIndex(i => i.id === tab), tabs.findIndex(i => i.id === prevTab)];
 					if (index !== prevIndex)
 						to.meta.pageTransition.name = index > prevIndex ? "right" : index < prevIndex ? "left" : "";
-				} else {
+				} else
 					to.meta.pageTransition.name = "page-jump";
-				}
 			}
 		},
 	});
 
-
 	const userSelfInfoStore = useSelfUserInfoStore();
 
-	const isSelf = ref(false); // TODO: 是否为登录用户本人。
+	const isSelf = ref(false);
 	const isFollowed = ref(false); // TODO
 	const actionMenu = ref<FlyoutModel>();
 	const userInfo = ref<GetUserInfoByUidResponseDto["result"]>();
 
-	const fullwidthRegexp = makeFullwidth();
-
-	const route = useRoute("");
-
 	const urlUid = ref();
 	// SSR
-	urlUid.value = route.params.uid;
+	urlUid.value = currentUserUid();
 	// CSR
 	const nuxtApp = useNuxtApp();
 	nuxtApp.hook("page:finish", () => {
-		urlUid.value = route.params.uid;
+		urlUid.value = currentUserUid();
 	});
 
 	watch(urlUid, fetchUserData, { deep: false });
@@ -61,14 +52,6 @@
 	watch(selfUid, fetchUserData, { deep: false });
 
 	const currentTab = computed(() => currentUserTab());
-
-	// TODO
-	// // 验证是否是加上全宽括弧而不是半宽括弧，条件是包含至少一个非谚文的全宽字符。
-	// const memoParen = computed(() => {
-	// 	const memo = user.value?.bio ?? "";
-	// 	return !memo.trim() ? "" :
-	// 		fullwidthRegexp.exec(memo) ? "fullwidth" : "halfwidth";
-	// });
 
 	/** fetch the user profile data */
 	async function fetchUserData() {
@@ -86,7 +69,7 @@
 		}
 	}
 
-	await fetchUserData();
+	fetchUserData();
 
 	const titleAffixString = t.user_page.title_affix; // HACK: Bypass "A composable that requires access to the Nuxt instance was called outside of a plugin."
 
@@ -102,23 +85,20 @@
 		<header>
 			<div>
 				<div class="content">
-					<div class="user">
-						<component :is="isSelf ? LocaleLink : 'span'" to="/settings/profile">
-							<UserAvatar :avatar="isSelf ? userSelfInfoStore.userAvatar : userInfo?.avatar" />
-						</component>
-						<div class="texts">
-							<div class="name">
-								<span class="nickname">{{ isSelf ? userSelfInfoStore.userNickname : userInfo?.userNickname }}</span>
-								<span class="username">@{{ isSelf ? userSelfInfoStore.username : userInfo?.username }}</span>
-								<!-- <span v-if="memoParen" class="memo" :class="[memoParen]">{{ user?.bio }}</span> -->
-								<span class="icons">
-									<Icon v-if="isSelf ? userSelfInfoStore.gender === 'male' : userInfo?.gender === 'male'" name="male" class="male" />
-									<Icon v-else-if="isSelf ? userSelfInfoStore.gender === 'female' : userInfo?.gender === 'female'" name="female" class="female" />
-								</span>
-							</div>
-							<div class="bio">{{ isSelf ? userSelfInfoStore.signature : userInfo?.signature }}</div>
-						</div>
-					</div>
+					<UserContent
+						v-tooltip="t.profile.edit"
+						:avatar="isSelf ? userSelfInfoStore.userAvatar : userInfo?.avatar"
+						:username="isSelf ? userSelfInfoStore.username : userInfo?.username"
+						:nickname="isSelf ? userSelfInfoStore.userNickname : userInfo?.userNickname"
+						:gender="isSelf ? userSelfInfoStore.gender : userInfo?.gender"
+						:to="isSelf ? `/settings/profile` : undefined"
+						size="huge"
+						center
+					>
+						<template #description>
+							{{ isSelf ? userSelfInfoStore.signature : userInfo?.signature }}
+						</template>
+					</UserContent>
 					<div class="actions">
 						<!-- <SoftButton v-tooltip:top="'私信'" icon="email" /> -->
 						<SoftButton v-if="!isSelf" v-tooltip:top="t.more" icon="more_vert" @click="e => actionMenu = [e, 'y']" />
@@ -176,85 +156,6 @@
 		justify-content: space-between;
 		align-items: center;
 		padding: 24px 0;
-
-		.user {
-			display: flex;
-			flex-grow: 1;
-			gap: 16px;
-			align-items: center;
-
-			.texts {
-				flex-grow: 1;
-				width: 100%;
-				user-select: text;
-			}
-
-			.name {
-				display: flex;
-				gap: 8px;
-				align-items: center;
-				font-size: 24px;
-
-				> * {
-					flex-shrink: 0;
-				}
-
-				.nickname {
-					color: c(text-color);
-					font-weight: bold;
-
-					+ .icons {
-						margin-left: 10px;
-					}
-				}
-
-				.username {
-					color: c(icon-color);
-				}
-
-				.memo {
-					color: c(icon-color);
-
-					&.fullwidth {
-						&::before {
-							content: "（";
-						}
-
-						&::after {
-							content: "）";
-						}
-					}
-
-					&.halfwidth {
-						&::before {
-							content: "\a0(";
-						}
-
-						&::after {
-							content: ")\a0";
-						}
-					}
-				}
-
-				.icons {
-					@include flex-center;
-
-					.male {
-						color: c(blue);
-					}
-
-					.female {
-						color: c(pink);
-					}
-				}
-			}
-
-			.bio {
-				margin-top: 6px;
-				color: c(icon-color);
-				user-select: text;
-			}
-		}
 
 		.actions {
 			display: flex;
