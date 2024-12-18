@@ -3,7 +3,7 @@
 	import manifest from "public/manifest.json";
 	import { useDynamicLayout } from "helpers/page-transition";
 
-	const homepage = "https://cerasus.kirakira.moe/";
+	const homepage = "https://kirakira.moe/";
 	const { locale } = useI18n();
 	const appSettings = useAppSettingsStore();
 
