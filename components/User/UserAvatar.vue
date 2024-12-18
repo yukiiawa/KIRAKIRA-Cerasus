@@ -6,25 +6,24 @@
 	const props = defineProps<{
 		/** 头像网址。 */
 		avatar?: string;
-		/**
-		 * 点击后跳转到链接。
-		 * @deprecated
-		 */
-		link?: string;
 		/** 用户 UID。 */
 		uid?: Readable;
+		/** 超链接目标地址。 */
+		to?: string;
+		/** 是否强制允许显示悬停效果，用于使用点击事件或外部套了链接时。 */
+		hoverable?: boolean;
 	}>();
 
 	const userLink = computed(() => {
 		const uid = props.uid === undefined ? NaN : Number(props.uid); // 不要用一元加号运算符！
-		return Number.isFinite(uid) ? `/user/${uid}` : props.link;
+		return Number.isFinite(uid) ? `/user/${uid}` : props.to;
 	});
 
 	const provider = computed(() => props.avatar?.startsWith("blob:http") ? undefined : environment.cloudflareImageProvider);
 </script>
 
 <template>
-	<Comp v-ripple>
+	<Comp v-ripple="Boolean(userLink) || Boolean(hoverable)" :class="{ hoverable }">
 		<NuxtImg
 			v-if="avatar"
 			:provider
@@ -34,11 +33,12 @@
 			format="avif"
 			width="100"
 			height="100"
+			:class="{ hoverable }"
 			:placeholder="[20, 20, 100, 2]"
 		/>
 		<Icon v-else name="person" />
 		<div v-if="avatar" class="tint-overlay"></div>
-		<LocaleLink v-if="userLink" :to="userLink" :draggable="false" class="lite" />
+		<LocaleLink v-if="userLink" :to="userLink" class="lite" />
 	</Comp>
 </template>
 
@@ -72,7 +72,6 @@
 		overflow: clip;
 		color: c(icon-color);
 		background-color: c(gray-20);
-		cursor: pointer;
 
 		.colored-sidebar & {
 			background-color: c(main-bg, 20%);
@@ -86,12 +85,16 @@
 			}
 		}
 
+		&.hoverable {
+			cursor: pointer;
+		}
+
 		> img {
 			@include square(100%);
 			z-index: 1;
 			object-fit: cover;
 
-			&:any-hover,
+			&.hoverable:any-hover,
 			&:has(~ a:any-hover) {
 				@include hover;
 			}
