@@ -62,7 +62,7 @@
 			<UserAvatar :avatar :uid :to />
 		</slot>
 
-		<component :is="to ? LocaleLink : 'div'" class="container link lite" :to="to ? to : undefined">
+		<component :is="to ? LocaleLink : 'div'" class="container link lite" :to>
 			<div class="info">
 				<component :is="uid ? LocaleLink : 'div'" v-if="nickname || username" :to="uid ? `/user/${uid ?? ''}` : undefined" class="names lite">
 					<span class="nickname">{{ nickname }}</span>
