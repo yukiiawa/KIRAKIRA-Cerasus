@@ -38,7 +38,7 @@
 
 	const slots = useSlots();
 
-	// TODO: 从用户页中移动过来的，本来就被注释掉了，用于显示备注用户，暂时无用。
+	// TODO: 显示备注用户，待后端功能实现。
 
 	// const fullwidthRegexp = makeFullwidth();
 
