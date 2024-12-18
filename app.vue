@@ -107,6 +107,12 @@
 	loadDevGlobal();
 	// 彩蛋
 	loadEgg();
+	if (environment.client)
+		console.log(
+			"\n%cKIRAKIRA☆DOUGA%c\nA cute site for cute people! # KAWAII FOREVER #\n",
+			"font-size: 24px; font-weight: bold; color: #f06e8e;",
+			"color: #f06e8e;",
+		);
 </script>
 
 <template>
