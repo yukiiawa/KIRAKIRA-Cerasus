@@ -86,7 +86,7 @@
 			<div>
 				<div class="content">
 					<UserContent
-						v-tooltip="t.profile.edit"
+						v-tooltip="isSelf ? t.profile.edit : undefined"
 						:avatar="isSelf ? userSelfInfoStore.userAvatar : userInfo?.avatar"
 						:username="isSelf ? userSelfInfoStore.username : userInfo?.username"
 						:nickname="isSelf ? userSelfInfoStore.userNickname : userInfo?.userNickname"
