@@ -1,5 +1,4 @@
 import { GET, POST, uploadFile2CloudflareImages } from "api/Common";
-import getCorrectUri from "api/Common/getCorrectUri";
 import type {
 	CheckUsernameRequestDto, CheckInvitationCodeRequestDto, CheckInvitationCodeResponseDto,
 	CheckUserTokenResponseDto, CreateInvitationCodeResponseDto, GetMyInvitationCodeResponseDto,
@@ -20,8 +19,8 @@ import type {
 	AdminClearUserInfoResponseDto,
 } from "./UserControllerDto";
 
-const BACK_END_URL = getCorrectUri();
-const USER_API_URL = `${BACK_END_URL}/user`;
+const BACK_END_URI = environment.backendUri;
+const USER_API_URI = `${BACK_END_URI}user`;
 
 /**
  * 用户注册
@@ -30,7 +29,7 @@ const USER_API_URL = `${BACK_END_URL}/user`;
  */
 export const registration = async (userRegistrationData: UserRegistrationRequestDto): Promise<UserRegistrationResponseDto> => {
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
-	return await POST(`${USER_API_URL}/registering`, userRegistrationData, { credentials: "include" }) as UserRegistrationResponseDto;
+	return await POST(`${USER_API_URI}/registering`, userRegistrationData, { credentials: "include" }) as UserRegistrationResponseDto;
 };
 
 /**
@@ -40,7 +39,7 @@ export const registration = async (userRegistrationData: UserRegistrationRequest
  */
 export const login = async (userLoginRequest: UserLoginRequestDto): Promise<UserLoginResponseDto> => {
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
-	return await POST(`${USER_API_URL}/login`, userLoginRequest, { credentials: "include" }) as UserLoginResponseDto;
+	return await POST(`${USER_API_URI}/login`, userLoginRequest, { credentials: "include" }) as UserLoginResponseDto;
 };
 
 /**
@@ -49,7 +48,7 @@ export const login = async (userLoginRequest: UserLoginRequestDto): Promise<User
  * @returns 验证用户邮箱是否已经存在的返回参数
  */
 export const userExistsCheck = async (userExistsCheckRequest: UserExistsCheckRequestDto): Promise<UserExistsCheckResponseDto> => {
-	return await GET(`${USER_API_URL}/existsCheck?email=${userExistsCheckRequest.email}`) as UserExistsCheckResponseDto;
+	return await GET(`${USER_API_URI}/existsCheck?email=${userExistsCheckRequest.email}`) as UserExistsCheckResponseDto;
 };
 
 /**
@@ -58,7 +57,7 @@ export const userExistsCheck = async (userExistsCheckRequest: UserExistsCheckReq
  * @returns 用户更改邮箱返回的参数
  */
 export const updateUserEmail = async (updateUserEmailRequest: UpdateUserEmailRequestDto): Promise<UpdateUserEmailResponseDto> => {
-	return await POST(`${USER_API_URL}/update/email`, updateUserEmailRequest, { credentials: "include" }) as UpdateUserEmailResponseDto;
+	return await POST(`${USER_API_URI}/update/email`, updateUserEmailRequest, { credentials: "include" }) as UpdateUserEmailResponseDto;
 };
 
 /**
@@ -67,7 +66,7 @@ export const updateUserEmail = async (updateUserEmailRequest: UpdateUserEmailReq
  * @returns 创建或更新用户信息的响应结果
  */
 export const updateOrCreateUserInfo = async (updateOrCreateUserInfoRequest: UpdateOrCreateUserInfoRequestDto): Promise<UpdateOrCreateUserInfoResponseDto> => {
-	return await POST(`${USER_API_URL}/update/info`, updateOrCreateUserInfoRequest, { credentials: "include" }) as UpdateOrCreateUserInfoResponseDto;
+	return await POST(`${USER_API_URI}/update/info`, updateOrCreateUserInfoRequest, { credentials: "include" }) as UpdateOrCreateUserInfoResponseDto;
 };
 
 /**
@@ -78,7 +77,7 @@ export const updateOrCreateUserInfo = async (updateOrCreateUserInfoRequest: Upda
  */
 export const getSelfUserInfo = async (getSelfUserInfoRequest?: GetSelfUserInfoRequestDto): Promise<GetSelfUserInfoResponseDto> => {
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
-	const selfUserInfo = await POST(`${USER_API_URL}/self`, getSelfUserInfoRequest, { credentials: "include" }) as GetSelfUserInfoResponseDto;
+	const selfUserInfo = await POST(`${USER_API_URI}/self`, getSelfUserInfoRequest, { credentials: "include" }) as GetSelfUserInfoResponseDto;
 	const selfUserInfoResult = selfUserInfo.result;
 	if (selfUserInfo.success && selfUserInfoResult) {
 		const selfUserInfoStore = useSelfUserInfoStore();
@@ -103,7 +102,7 @@ export const getSelfUserInfo = async (getSelfUserInfoRequest?: GetSelfUserInfoRe
  * @param getUserInfoByUidRequest 传入的 UID
  */
 export const getUserInfo = async (getUserInfoByUidRequest: GetUserInfoByUidRequestDto): Promise<GetUserInfoByUidResponseDto> => {
-	const { data: result } = await useFetch(`${USER_API_URL}/info?uid=${getUserInfoByUidRequest.uid}`, { credentials: "include" }); // 使用 useFetch 以启用服务端渲染
+	const { data: result } = await useFetch(`${USER_API_URI}/info?uid=${getUserInfoByUidRequest.uid}`, { credentials: "include" }); // 使用 useFetch 以启用服务端渲染
 	return result.value as GetUserInfoByUidResponseDto;
 };
 
@@ -113,7 +112,7 @@ export const getUserInfo = async (getUserInfoByUidRequest: GetUserInfoByUidReque
  */
 export const checkUserToken = async (): Promise<CheckUserTokenResponseDto> => {
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
-	return await GET(`${USER_API_URL}/check`, { credentials: "include" }) as CheckUserTokenResponseDto;
+	return await GET(`${USER_API_URI}/check`, { credentials: "include" }) as CheckUserTokenResponseDto;
 };
 
 /**
@@ -122,7 +121,7 @@ export const checkUserToken = async (): Promise<CheckUserTokenResponseDto> => {
  */
 export async function userLogout(): Promise<UserLogoutResponseDto> {
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
-	const logoutResult = await GET(`${USER_API_URL}/logout`, { credentials: "include" }) as UserLogoutResponseDto;
+	const logoutResult = await GET(`${USER_API_URI}/logout`, { credentials: "include" }) as UserLogoutResponseDto;
 	if (logoutResult.success) {
 		const selfUserInfoStore = useSelfUserInfoStore();
 		selfUserInfoStore.isLogined = false;
@@ -145,7 +144,7 @@ export async function userLogout(): Promise<UserLogoutResponseDto> {
  * 更新用户头像，并获取用于用户上传头像的预签名 URL, 上传限时 60 秒
  */
 export const getUserAvatarUploadSignedUrl = async (): Promise<GetUserAvatarUploadSignedUrlResponseDto> => {
-	return await GET(`${USER_API_URL}/avatar/preUpload`, { credentials: "include" }) as GetUserAvatarUploadSignedUrlResponseDto;
+	return await GET(`${USER_API_URI}/avatar/preUpload`, { credentials: "include" }) as GetUserAvatarUploadSignedUrlResponseDto;
 };
 
 /**
@@ -172,7 +171,7 @@ export const uploadUserAvatar = async (fileName: string, avatarBlobData: Blob, s
  */
 export const getUserSettings = async (getUserSettingsRequest?: GetUserSettingsRequestDto): Promise<GetUserSettingsResponseDto> => {
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
-	const userSettings = await POST(`${USER_API_URL}/settings`, getUserSettingsRequest, { credentials: "include" }) as GetUserSettingsResponseDto;
+	const userSettings = await POST(`${USER_API_URI}/settings`, getUserSettingsRequest, { credentials: "include" }) as GetUserSettingsResponseDto;
 	return userSettings;
 };
 
@@ -183,7 +182,7 @@ export const getUserSettings = async (getUserSettingsRequest?: GetUserSettingsRe
  */
 export const updateUserSettings = async (updateOrCreateUserSettingsRequest: UpdateOrCreateUserSettingsRequestDto): Promise<UpdateOrCreateUserSettingsResponseDto> => {
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
-	return await POST(`${USER_API_URL}/settings/update`, updateOrCreateUserSettingsRequest, { credentials: "include" }) as UpdateOrCreateUserSettingsResponseDto;
+	return await POST(`${USER_API_URI}/settings/update`, updateOrCreateUserSettingsRequest, { credentials: "include" }) as UpdateOrCreateUserSettingsResponseDto;
 };
 
 /**
@@ -193,7 +192,7 @@ export const updateUserSettings = async (updateOrCreateUserSettingsRequest: Upda
  */
 export const requestSendVerificationCode = async (requestSendVerificationCodeRequest: RequestSendVerificationCodeRequestDto): Promise<RequestSendVerificationCodeResponseDto> => {
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
-	return await POST(`${USER_API_URL}/requestSendVerificationCode`, requestSendVerificationCodeRequest, { credentials: "include" }) as RequestSendVerificationCodeResponseDto;
+	return await POST(`${USER_API_URI}/requestSendVerificationCode`, requestSendVerificationCodeRequest, { credentials: "include" }) as RequestSendVerificationCodeResponseDto;
 };
 
 /**
@@ -203,7 +202,7 @@ export const requestSendVerificationCode = async (requestSendVerificationCodeReq
  */
 export const checkInvitationCode = async (checkInvitationCodeRequestDto: CheckInvitationCodeRequestDto): Promise<CheckInvitationCodeResponseDto> => {
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
-	return await POST(`${USER_API_URL}/checkInvitationCode`, checkInvitationCodeRequestDto, { credentials: "include" }) as CheckInvitationCodeResponseDto;
+	return await POST(`${USER_API_URI}/checkInvitationCode`, checkInvitationCodeRequestDto, { credentials: "include" }) as CheckInvitationCodeResponseDto;
 };
 
 /**
@@ -212,7 +211,7 @@ export const checkInvitationCode = async (checkInvitationCodeRequestDto: CheckIn
  */
 export const createInvitationCode = async (): Promise<CreateInvitationCodeResponseDto> => {
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
-	return await POST(`${USER_API_URL}/createInvitationCode`, undefined, { credentials: "include" }) as CreateInvitationCodeResponseDto;
+	return await POST(`${USER_API_URI}/createInvitationCode`, undefined, { credentials: "include" }) as CreateInvitationCodeResponseDto;
 };
 
 /**
@@ -224,10 +223,10 @@ export const getMyInvitationCode = async (headerCookie: { cookie?: string | unde
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
 	// NOTE: use { headers: headerCookie } to passing client-side cookies to backend API when SSR.
 	try {
-		const { data: result } = await useFetch(`${USER_API_URL}/myInvitationCode`, { headers: headerCookie, credentials: "include" });
+		const { data: result } = await useFetch(`${USER_API_URI}/myInvitationCode`, { headers: headerCookie, credentials: "include" });
 		return result.value as GetMyInvitationCodeResponseDto;
 	} catch (error) {
-		console.error("ERROR", "获取用户邀请码失败");
+		console.error("ERROR", "获取用户邀请码失败", error);
 		return { success: false, message: "获取用户邀请码失败", invitationCodeResult: [] };
 	}
 };
@@ -239,7 +238,7 @@ export const getMyInvitationCode = async (headerCookie: { cookie?: string | unde
  */
 export const requestSendChangeEmailVerificationCode = async (requestSendChangeEmailVerificationCodeRequest: RequestSendChangeEmailVerificationCodeRequestDto): Promise<RequestSendChangeEmailVerificationCodeResponseDto> => {
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
-	return await POST(`${USER_API_URL}/requestSendChangeEmailVerificationCode`, requestSendChangeEmailVerificationCodeRequest, { credentials: "include" }) as RequestSendChangeEmailVerificationCodeResponseDto;
+	return await POST(`${USER_API_URI}/requestSendChangeEmailVerificationCode`, requestSendChangeEmailVerificationCodeRequest, { credentials: "include" }) as RequestSendChangeEmailVerificationCodeResponseDto;
 };
 
 /**
@@ -249,7 +248,7 @@ export const requestSendChangeEmailVerificationCode = async (requestSendChangeEm
  */
 export const requestSendChangePasswordVerificationCode = async (requestSendChangePasswordVerificationCodeRequest: RequestSendChangePasswordVerificationCodeRequestDto): Promise<RequestSendChangePasswordVerificationCodeResponseDto> => {
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
-	return await POST(`${USER_API_URL}/requestSendChangePasswordVerificationCode`, requestSendChangePasswordVerificationCodeRequest, { credentials: "include" }) as RequestSendChangePasswordVerificationCodeResponseDto;
+	return await POST(`${USER_API_URI}/requestSendChangePasswordVerificationCode`, requestSendChangePasswordVerificationCodeRequest, { credentials: "include" }) as RequestSendChangePasswordVerificationCodeResponseDto;
 };
 
 /**
@@ -259,7 +258,7 @@ export const requestSendChangePasswordVerificationCode = async (requestSendChang
  */
 export const updateUserPassword = async (updateUserPasswordRequest: UpdateUserPasswordRequestDto): Promise<UpdateUserPasswordResponseDto> => {
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
-	return await POST(`${USER_API_URL}/update/password`, updateUserPasswordRequest, { credentials: "include" }) as UpdateUserPasswordResponseDto;
+	return await POST(`${USER_API_URI}/update/password`, updateUserPasswordRequest, { credentials: "include" }) as UpdateUserPasswordResponseDto;
 };
 
 /**
@@ -269,7 +268,7 @@ export const updateUserPassword = async (updateUserPasswordRequest: UpdateUserPa
  */
 export const checkUsername = async (checkUsernameRequest: CheckUsernameRequestDto): Promise<CheckUsernameResponseDto> => {
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
-	return await GET(`${USER_API_URL}/checkUsername?username=${checkUsernameRequest.username}`, { credentials: "include" }) as CheckUsernameResponseDto;
+	return await GET(`${USER_API_URI}/checkUsername?username=${checkUsernameRequest.username}`, { credentials: "include" }) as CheckUsernameResponseDto;
 };
 
 /**
@@ -279,7 +278,7 @@ export const checkUsername = async (checkUsernameRequest: CheckUsernameRequestDt
  */
 export const blockUserByUID = async (blockUserByUIDRequest: BlockUserByUIDRequestDto): Promise<BlockUserByUIDResponseDto> => {
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
-	return await POST(`${USER_API_URL}/blockUser`, blockUserByUIDRequest, { credentials: "include" }) as BlockUserByUIDResponseDto;
+	return await POST(`${USER_API_URI}/blockUser`, blockUserByUIDRequest, { credentials: "include" }) as BlockUserByUIDResponseDto;
 };
 
 /**
@@ -289,7 +288,7 @@ export const blockUserByUID = async (blockUserByUIDRequest: BlockUserByUIDReques
  */
 export const reactivateUserByUID = async (reactivateUserByUIDRequest: ReactivateUserByUIDRequestDto): Promise<ReactivateUserByUIDResponseDto> => {
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
-	return await POST(`${USER_API_URL}/reactivateUser`, reactivateUserByUIDRequest, { credentials: "include" }) as ReactivateUserByUIDResponseDto;
+	return await POST(`${USER_API_URI}/reactivateUser`, reactivateUserByUIDRequest, { credentials: "include" }) as ReactivateUserByUIDResponseDto;
 };
 
 /**
@@ -300,7 +299,7 @@ export const reactivateUserByUID = async (reactivateUserByUIDRequest: Reactivate
 export const getBlockedUser = async (headerCookie: { cookie?: string | undefined }): Promise<GetBlockedUserResponseDto> => {
 	// NOTE: use { headers: headerCookie } to passing client-side cookies to backend API when SSR.
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
-	const { data: result } = await useFetch(`${USER_API_URL}/blocked/info`, { headers: headerCookie, credentials: "include" });
+	const { data: result } = await useFetch(`${USER_API_URI}/blocked/info`, { headers: headerCookie, credentials: "include" });
 	const userInfoResult = result.value as GetBlockedUserResponseDto;
 	const finalUserInfoResult = userInfoResult?.result?.map(userInfo => {
 		const finalResult = {
@@ -323,7 +322,7 @@ export const getBlockedUser = async (headerCookie: { cookie?: string | undefined
 export const adminGetUserInfo = async (isOnlyShowUserInfoUpdatedAfterReview: boolean, page: number, pageSize: number, headerCookie: { cookie?: string | undefined }): Promise<AdminGetUserInfoResponseDto> => {
 	// NOTE: use { headers: headerCookie } to passing client-side cookies to backend API when SSR.
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
-	const { data: result } = await useFetch(`${USER_API_URL}/adminGetUserInfo?isOnlyShowUserInfoUpdatedAfterReview=${isOnlyShowUserInfoUpdatedAfterReview}&page=${page}&pageSize=${pageSize}`, { headers: headerCookie, credentials: "include" });
+	const { data: result } = await useFetch(`${USER_API_URI}/adminGetUserInfo?isOnlyShowUserInfoUpdatedAfterReview=${isOnlyShowUserInfoUpdatedAfterReview}&page=${page}&pageSize=${pageSize}`, { headers: headerCookie, credentials: "include" });
 	return result.value as AdminGetUserInfoResponseDto;
 };
 
@@ -334,7 +333,7 @@ export const adminGetUserInfo = async (isOnlyShowUserInfoUpdatedAfterReview: boo
  */
 export const approveUserInfo = async (approveUserInfoRequest: ApproveUserInfoRequestDto): Promise<ApproveUserInfoResponseDto> => {
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
-	return await POST(`${USER_API_URL}/approveUserInfo`, approveUserInfoRequest, { credentials: "include" }) as ApproveUserInfoResponseDto;
+	return await POST(`${USER_API_URI}/approveUserInfo`, approveUserInfoRequest, { credentials: "include" }) as ApproveUserInfoResponseDto;
 };
 
 /**
@@ -344,5 +343,5 @@ export const approveUserInfo = async (approveUserInfoRequest: ApproveUserInfoReq
  */
 export const adminClearUserInfo = async (adminClearUserInfoRequest: AdminClearUserInfoRequestDto): Promise<AdminClearUserInfoResponseDto> => {
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
-	return await POST(`${USER_API_URL}/adminClearUserInfo`, adminClearUserInfoRequest, { credentials: "include" }) as AdminClearUserInfoResponseDto;
+	return await POST(`${USER_API_URI}/adminClearUserInfo`, adminClearUserInfoRequest, { credentials: "include" }) as AdminClearUserInfoResponseDto;
 };

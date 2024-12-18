@@ -1,9 +1,8 @@
 import { GET, POST } from "../Common";
-import getCorrectUri from "../Common/getCorrectUri";
 import type { CreateVideoTagResponseDto, GetVideoTagByTagIdRequestDto, GetVideoTagByTagIdResponseDto, SearchVideoTagRequestDto, SearchVideoTagResponseDto } from "./VideoTagControllerDto";
 
-const BACK_END_URL = getCorrectUri();
-const VIDEO_TAG_API_URL = `${BACK_END_URL}/video/tag`;
+const BACK_END_URI = environment.backendUri;
+const VIDEO_TAG_API_URI = `${BACK_END_URI}video/tag`;
 
 /**
  * 创建视频 TAG
@@ -11,7 +10,7 @@ const VIDEO_TAG_API_URL = `${BACK_END_URL}/video/tag`;
  * @returns 创建视频 TAG 的请求响应
  */
 export async function createVideoTag(createVideoTagRequest: CreateVideoTagRequestDto): Promise<CreateVideoTagResponseDto> {
-	return await POST(`${VIDEO_TAG_API_URL}/create`, createVideoTagRequest, { credentials: "include" }) as CreateVideoTagResponseDto;
+	return await POST(`${VIDEO_TAG_API_URI}/create`, createVideoTagRequest, { credentials: "include" }) as CreateVideoTagResponseDto;
 }
 
 /**
@@ -20,7 +19,7 @@ export async function createVideoTag(createVideoTagRequest: CreateVideoTagReques
  * @returns 搜索视频的请求响应
  */
 export async function searchVideoTag(searchVideoTagRequest: SearchVideoTagRequestDto): Promise<SearchVideoTagResponseDto> {
-	return await GET(`${VIDEO_TAG_API_URL}/search?tagName=${searchVideoTagRequest.tagNameSearchKey}`) as SearchVideoTagResponseDto;
+	return await GET(`${VIDEO_TAG_API_URI}/search?tagName=${searchVideoTagRequest.tagNameSearchKey}`) as SearchVideoTagResponseDto;
 }
 
 /**
@@ -30,7 +29,7 @@ export async function searchVideoTag(searchVideoTagRequest: SearchVideoTagReques
  */
 export const getTagsByTagIds = async (getVideoTagByTagIdRequest: GetVideoTagByTagIdRequestDto): Promise<GetVideoTagByTagIdResponseDto> => {
 	if (getVideoTagByTagIdRequest && getVideoTagByTagIdRequest.tagId) {
-		const { data: result } = await useFetch<GetVideoTagByTagIdResponseDto>(`${VIDEO_TAG_API_URL}/get`, {
+		const { data: result } = await useFetch<GetVideoTagByTagIdResponseDto>(`${VIDEO_TAG_API_URI}/get`, {
 			method: "POST",
 			body: { tagId: getVideoTagByTagIdRequest.tagId },
 		});
