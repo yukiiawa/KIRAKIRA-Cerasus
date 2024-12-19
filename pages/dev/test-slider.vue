@@ -1,5 +1,5 @@
 <docs>
-	【【【！！！！！！！！！！用于测试 Slider 精准度问题。修复后移到组件测试页，不要移除！！！！！！！！！！】】】
+	用于测试 Slider 精准度问题。
 </docs>
 
 <script setup lang="ts">
@@ -16,8 +16,8 @@
 		</Segmented>
 		<p>{{ value }}</p>
 		<div class="slider-wrapper">
-			<Slider v-model="value" :min="0" :max="1" :pending :defaultValue="0.5" />
 			<!-- <Slider v-model="value" :min="0" :max="1" :pending :defaultValue="0.5" /> -->
+			<Slider v-model="value" :min="0" :max="100" :pending :defaultValue="0.5" />
 		</div>
 	</div>
 </template>
@@ -41,8 +41,8 @@
 		width: 100%;
 		margin: 50px 0;
 
-		.slider:nth-of-type(2) {
-			--size: large;
-		}
+		// .slider:nth-of-type(2) {
+		// 	--size: large;
+		// }
 	}
 </style>
