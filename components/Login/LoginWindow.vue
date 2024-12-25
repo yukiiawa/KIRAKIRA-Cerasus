@@ -103,19 +103,19 @@
 				passwordHash,
 				email: emailStr,
 				clientLanguage: locale,
-			}
-			const sendUserEmailAuthenticatorVerificationCodeResult = await api.user.sendUserEmailAuthenticatorVerificationCode(sendUserEmailAuthenticatorVerificationCodeRequest)
-			timeout.startTimeout() // 开始倒计时
+			};
+			const sendUserEmailAuthenticatorVerificationCodeResult = await api.user.sendUserEmailAuthenticatorVerificationCode(sendUserEmailAuthenticatorVerificationCodeRequest);
+			timeout.startTimeout(); // 开始倒计时
 
 			if (!sendUserEmailAuthenticatorVerificationCodeResult.success) {
 				useToast("发送登录验证码失败，发送失败，请稍后再试！", "error", 5000); // TODO: 使用多语言
-				currentPage.value = 'login1';
+				currentPage.value = "login1";
 				return;
 			}
 
 			if (sendUserEmailAuthenticatorVerificationCodeResult.isCoolingDown) {
 				useToast("发送登录验证码失败，正在冷却中！", "warning", 5000); // TODO: 使用多语言
-				currentPage.value = 'login1';
+				currentPage.value = "login1";
 				return;
 			}
 		} catch (error) {
@@ -133,6 +133,7 @@
 			const emailStr = email.value;
 			if (!passwordStr || !emailStr) {
 				useToast("用户名和密码不能为空！", "error", 5000); // TODO: 使用多语言
+				isChecking2FA.value = false;
 				return;
 			}
 
@@ -143,18 +144,19 @@
 
 			if (!check2FAByEmailResult.success) {
 				useToast("检查用户 2FA 失败！", "error", 5000); // TODO: 使用多语言
+				isChecking2FA.value = false;
 				return;
 			}
 
 			// 如果有 2FA，则跳转到对应的 2FA 登录页面，如果没有 2FA 则直接登录
-			if (check2FAByEmailResult.have2FA) {
-				if (check2FAByEmailResult.type === 'email') {
+			if (check2FAByEmailResult.have2FA)
+				if (check2FAByEmailResult.type === "email") {
 					await sentLoginVerificationCode();
 					currentPage.value = "login2-email";
-				} else {
+				} else
 					currentPage.value = "login2-2fa";
-				}
-			} else
+				
+			else
 				await loginUser();
 		} catch (error) {
 			useToast(t.toast.login_failed, "error");
@@ -181,7 +183,6 @@
 
 				if (loginResponse.success && loginResponse.uid && loginResponse.token) {
 					selfUserInfoStore.tempHideAvatarFromSidebar = true;
-					selfUserInfoStore.isLogined = true;
 
 					// 登录后，将用户设置存储到 cookie，然后调用 cookieBinding 从 cookie 中获取样式设置并追加到 dom 根节点
 					const userSettings = await api.user.getUserSettings();

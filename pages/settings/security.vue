@@ -1,13 +1,15 @@
 <script setup lang="ts">
-	import QrcodeVue from "qrcode.vue"
-	import type { Level, RenderAs } from "qrcode.vue"
+	import QrcodeVue from "qrcode.vue";
+	import type { Level, RenderAs } from "qrcode.vue";
 
 	const passwordChangeDate = ref(new Date());
-	const authenticatorAddDate = ref(new Date());
 	const passwordChangeDateDisplay = computed(() => formatDateWithLocale(passwordChangeDate.value));
-	const authenticatorAddDateDisplay = computed(() => formatDateWithLocale(new Date(checkUser2FAResult.value?.totpCreationDateTime ?? 0)));
 	const selfUserInfoStore = useSelfUserInfoStore();
 	const appSettings = useAppSettingsStore();
+	const selfUserInfo = useSelfUserInfoStore();
+
+	// 警告相关
+	const isUnsafeAccount = computed(() => selfUserInfo.isLogined && appSettings.typeOf2FA === "none");
 
 	// 修改邮箱相关
 	const showChangeEmail = ref(false);
@@ -26,10 +28,12 @@
 	const isChangingPassword = ref(false);
 
 	// 2FA 相关
-	type TypeOf2FA = "none" | "email" | "totp"
+	const checkUser2FAResult = ref<CheckUserHave2FAServiceResponseDto>(); // 获取到的用户 2FA 类型
+	const authenticatorAddDateDisplay = computed(() => formatDateWithLocale(new Date(checkUser2FAResult.value?.totpCreationDateTime ?? 0)));
+	type TypeOf2FA = "none" | "email" | "totp";
 	const categoryOf2FAComputed = computed<TypeOf2FA>({ // 2FA 的类型，带有副作用
 		get() {
-			return appSettings.typeOf2FA === 'email' || appSettings.typeOf2FA === 'totp' ? appSettings.typeOf2FA : 'none';
+			return appSettings.typeOf2FA === "email" || appSettings.typeOf2FA === "totp" ? appSettings.typeOf2FA : "none";
 		},
 		set(newValue) {
 			if (appSettings.typeOf2FA === "totp" && newValue !== "totp" && checkUser2FAResult.value?.type === "totp") {
@@ -47,12 +51,11 @@
 				createEmail2FA();
 			} else
 				appSettings.typeOf2FA = newValue;
-		}
+		},
 	});
-	const checkUser2FAResult = ref<CheckUserHave2FAServiceResponseDto>(); // 获取到的用户 2FA 类型
 	const hasBoundTotp = computed(() => checkUser2FAResult.value?.success && checkUser2FAResult.value.have2FA && checkUser2FAResult.value?.type === "totp"); // 是否已经有 TOTP，当 2FA 存在且类型为 totp 时，开启编辑 TOTP 的模态框，否则开启创建 TOTP 的模态框
-	const isEmail2FADisable = computed(() => checkUser2FAResult.value?.type === "totp" || categoryOf2FAComputed.value === "totp")
-	const isTotp2FADisable = computed(() => checkUser2FAResult.value?.type === "email" || categoryOf2FAComputed.value === "email")
+	const isEmail2FADisable = computed(() => checkUser2FAResult.value?.type === "totp" || categoryOf2FAComputed.value === "totp");
+	const isTotp2FADisable = computed(() => checkUser2FAResult.value?.type === "email" || categoryOf2FAComputed.value === "email");
 
 	// 创建 TOTP 相关
 	const showCreateTotpModel = ref(false); // 是否显示创建 TOTP 模态框
@@ -180,7 +183,7 @@
 	/**
 	 * 开启删除 Email 2FA 的模态框
 	 */
-	async function openDeleteEmail2FAModel() {
+	function openDeleteEmail2FAModel() {
 		showDeleteEmail2FAModel.value = true;
 	}
 
@@ -207,15 +210,15 @@
 			const headerCookie = useRequestHeaders(["cookie"]);
 			const deleteEmail2FAResult = await api.user.deleteEmail2FA(deleteUserEmailAuthenticatorRequest, headerCookie);
 			if (deleteEmail2FAResult.success) {
-				closeDeleteEmail2FAModel()
+				closeDeleteEmail2FAModel();
 				await checkUserHave2FAByUUID();
 			} else {
 				isDeletingEmail2FA.value = false;
-				useToast("关闭 Email 2FA 失败，请稍后重试", "error", 5000) // TODO: 使用多语言
+				useToast("关闭 Email 2FA 失败，请稍后重试", "error", 5000); // TODO: 使用多语言
 			}
 		} catch (error) {
 			isDeletingEmail2FA.value = false;
-			useToast("关闭 Email 2FA 时出错，请刷新页面", "error", 5000) // TODO: 使用多语言
+			useToast("关闭 Email 2FA 时出错，请刷新页面", "error", 5000); // TODO: 使用多语言
 		}
 	}
 
@@ -281,8 +284,8 @@
 			const confirmUserTotpAuthenticatorResult = await api.user.confirmUserTotpAuthenticator(confirmUserTotpAuthenticatorRequest, headerCookie);
 
 			if (confirmUserTotpAuthenticatorResult.success && confirmUserTotpAuthenticatorResult.result?.backupCode && confirmUserTotpAuthenticatorResult.result.recoveryCode) {
-				backupCode.value = confirmUserTotpAuthenticatorResult.result.backupCode
-				recoveryCode.value = confirmUserTotpAuthenticatorResult.result.recoveryCode
+				backupCode.value = confirmUserTotpAuthenticatorResult.result.backupCode;
+				recoveryCode.value = confirmUserTotpAuthenticatorResult.result.recoveryCode;
 			}
 			await checkUserHave2FAByUUID();
 		} catch (error) {
@@ -298,9 +301,9 @@
 	function downloadBackupCodeAndRecoveryCode() {
 		// TODO: 使用多语言
 		// 此处也许没必要使用多语言。
-		const backupCodeAndRecoveryCode = `BACKUP CODE:\n${displayBackupCode.value}\n\nRECOVERY CODE:\n${recoveryCode.value}`
-		const filename = `KIRAKIRA TOTP CODE ${selfUserInfoStore.username} (UID ${selfUserInfoStore.uid}) ${new Date().getTime()}`
-		downloadTxtFileFromString(backupCodeAndRecoveryCode, filename)
+		const backupCodeAndRecoveryCode = `BACKUP CODE:\n${displayBackupCode.value}\n\nRECOVERY CODE:\n${recoveryCode.value}`;
+		const filename = `KIRAKIRA TOTP CODE ${selfUserInfoStore.username} (UID ${selfUserInfoStore.uid}) ${new Date().getTime()}`;
+		downloadTxtFileFromString(backupCodeAndRecoveryCode, filename);
 	}
 
 	/**
@@ -364,13 +367,11 @@
 <template>
 	<div>
 		<!-- TODO: 使用多语言 -->
-		<!-- <InfoBar type="warning" title="警告">
-			该页面中的某些功能正在开发中，无法按预期工作。
+		<InfoBar v-if="isUnsafeAccount" type="warning" title="警告">
+			你还没有开启二重验证，建议您立即启用。
 			<br />
-			1）密码的修改日期未正确显示。
-			<br />
-			2）身份验证器无法正常使用。
-		</InfoBar> -->
+			没有启动二重验证的账号更容易被盗号。
+		</InfoBar>
 		<section>
 			<SettingsChipItem
 				icon="email"
@@ -456,7 +457,7 @@
 					<div class="step2">
 						<h3>2. 使用验证器程序扫描下方二维码</h3>
 						<div class="totp-qrcode-box">
-							<QrcodeVue v-if="otpAuth" :value="otpAuth" :level="totpQrcodeLevel" :render-as="totpQrcodeRenderAs" :size="totpQrcodeSize" />
+							<QrcodeVue v-if="otpAuth" :value="otpAuth" :level="totpQrcodeLevel" :renderAs="totpQrcodeRenderAs" :size="totpQrcodeSize" />
 						</div>
 					</div>
 					<div class="step3">
