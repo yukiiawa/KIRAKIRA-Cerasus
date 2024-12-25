@@ -28,7 +28,7 @@
 	const isUploadingCover = ref<boolean>(false); // 是否正在上传封面图
 	const cropper = ref(); // 图片裁剪器对象
 	const isNetworkImage = computed(() => thumbnailUrl.value !== BASE_THUMBNAIL_URL); // 封面图是静态资源图片还是网图，即用户是否已经完成封面图上传
-	const provider = computed(() => isNetworkImage.value ? "kirakira" : undefined); // 根据 isNetworkImage 的值判断是否使用 kirakira 作为 Nuxt Image 提供商
+	const provider = computed(() => isNetworkImage.value ? environment.cloudflareImageProvider : undefined); // 根据 isNetworkImage 的值判断是否使用 cloudflare 作为 Nuxt Image 提供商
 	// 视频分类
 	const VIDEO_CATEGORY = new Map([
 		["anime", t.category.anime],
@@ -56,7 +56,7 @@
 
 	watch(() => props.files, files => {
 		const file = files[0];
-		const basename = path.filenameWithoutExtension(file.name);
+		const basename = path.fileRoot(file.name);
 		title.value = basename;
 	}, { immediate: true });
 

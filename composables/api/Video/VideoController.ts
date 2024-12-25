@@ -1,17 +1,16 @@
-import getCorrectUri from "api/Common/getCorrectUri";
 import * as tus from "tus-js-client";
 import { GET, POST, DELETE, uploadFile2CloudflareImages } from "../Common";
 import type { ApprovePendingReviewVideoRequestDto, ApprovePendingReviewVideoResponseDto, DeleteVideoRequestDto, DeleteVideoResponseDto, GetVideoByKvidRequestDto, GetVideoByKvidResponseDto, GetVideoByUidRequestDto, GetVideoByUidResponseDto, GetVideoCoverUploadSignedUrlResponseDto, PendingReviewVideoResponseDto, SearchVideoByVideoTagIdRequestDto, SearchVideoByVideoTagIdResponseDto, ThumbVideoResponseDto, UploadVideoRequestDto, UploadVideoResponseDto } from "./VideoControllerDto";
 
-const BACK_END_URL = getCorrectUri();
-const VIDEO_API_URL = `${BACK_END_URL}/video`;
+const BACK_END_URI = environment.backendUri;
+const VIDEO_API_URI = `${BACK_END_URI}video`;
 
 /**
  * 获取主页中显示的视频
  * @returns 展示视频卡片需要的返回参数
  */
 export const getHomePageThumbVideo = async (): Promise<ThumbVideoResponseDto> => {
-	const { data: result } = await useFetch<ThumbVideoResponseDto>(`${VIDEO_API_URL}/home`);
+	const { data: result } = await useFetch<ThumbVideoResponseDto>(`${VIDEO_API_URI}/home`);
 	if (result.value)
 		return result.value;
 	else
@@ -25,7 +24,7 @@ export const getHomePageThumbVideo = async (): Promise<ThumbVideoResponseDto> =>
  */
 export const getVideoByKvid = async (getVideoByKvidRequest: GetVideoByKvidRequestDto): Promise<GetVideoByKvidResponseDto> => {
 	if (getVideoByKvidRequest && getVideoByKvidRequest.videoId) {
-		const { data: result } = await useFetch<GetVideoByKvidResponseDto>(`${VIDEO_API_URL}?videoId=${getVideoByKvidRequest.videoId}`, { credentials: "include" });
+		const { data: result } = await useFetch<GetVideoByKvidResponseDto>(`${VIDEO_API_URI}?videoId=${getVideoByKvidRequest.videoId}`, { credentials: "include" });
 		if (result.value)
 			return result.value;
 		else
@@ -41,7 +40,7 @@ export const getVideoByKvid = async (getVideoByKvidRequest: GetVideoByKvidReques
  */
 export const getVideoByUid = async (getVideoByUidRequest: GetVideoByUidRequestDto): Promise<GetVideoByUidResponseDto> => {
 	if (getVideoByUidRequest && getVideoByUidRequest.uid) {
-		const { data: result } = await useFetch<GetVideoByUidResponseDto>(`${VIDEO_API_URL}/user?uid=${getVideoByUidRequest.uid}`);
+		const { data: result } = await useFetch<GetVideoByUidResponseDto>(`${VIDEO_API_URI}/user?uid=${getVideoByUidRequest.uid}`);
 		if (result.value)
 			return result.value;
 		else
@@ -57,7 +56,7 @@ export const getVideoByUid = async (getVideoByUidRequest: GetVideoByUidRequestDt
  */
 export const searchVideoByKeyword = async (searchVideoByKeywordRequest: SearchVideoByKeywordRequestDto): Promise<SearchVideoByKeywordResponseDto> => {
 	if (searchVideoByKeywordRequest && searchVideoByKeywordRequest.keyword) {
-		const { data: result } = await useFetch<SearchVideoByKeywordResponseDto>(`${VIDEO_API_URL}/search?keyword=${searchVideoByKeywordRequest.keyword}`);
+		const { data: result } = await useFetch<SearchVideoByKeywordResponseDto>(`${VIDEO_API_URI}/search?keyword=${searchVideoByKeywordRequest.keyword}`);
 		if (result.value)
 			return result.value;
 		else
@@ -73,7 +72,7 @@ export const searchVideoByKeyword = async (searchVideoByKeywordRequest: SearchVi
  */
 export const searchVideoByTagIds = async (searchVideoByVideoTagIdRequest: SearchVideoByVideoTagIdRequestDto): Promise<SearchVideoByVideoTagIdResponseDto> => {
 	if (searchVideoByVideoTagIdRequest && searchVideoByVideoTagIdRequest.tagId) {
-		const { data: result } = await useFetch<SearchVideoByVideoTagIdResponseDto>(`${VIDEO_API_URL}/search/tag`, {
+		const { data: result } = await useFetch<SearchVideoByVideoTagIdResponseDto>(`${VIDEO_API_URI}/search/tag`, {
 			method: "POST",
 			body: { tagId: searchVideoByVideoTagIdRequest.tagId },
 		});
@@ -111,10 +110,10 @@ export class TusFileUploader {
 			let videoId = "";
 			// Create a new tus upload
 			const uploader = new tus.Upload(file, {
-				endpoint: `${VIDEO_API_URL}/tus`,
+				endpoint: `${VIDEO_API_URI}/tus`,
 				onBeforeRequest(req) {
 					const url = req.getURL();
-					if (url?.includes(VIDEO_API_URL)) { // 仅在请求后端 API 获取上传目的地 URL 时设置允许跨域传递 cookie，
+					if (url?.includes(VIDEO_API_URI)) { // 仅在请求后端 API 获取上传目的地 URL 时设置允许跨域传递 cookie，
 						const xhr = req.getUnderlyingObject();
 						xhr.withCredentials = true;
 					}
@@ -147,7 +146,7 @@ export class TusFileUploader {
 						reject(new Error("Can not find the video ID"));
 				},
 				onAfterResponse: (req, res) => {
-					if (!req.getURL().includes(VIDEO_API_URL)) {
+					if (!req.getURL().includes(VIDEO_API_URI)) {
 						const headerVideoId = res?.getHeader("stream-media-id");
 						if (headerVideoId)
 							videoId = headerVideoId;
@@ -202,7 +201,7 @@ export class TusFileUploader {
  * @returns 用于上传视频封面图的预签名 URL 请求响应
  */
 export async function getVideoCoverUploadSignedUrl(): Promise<GetVideoCoverUploadSignedUrlResponseDto> {
-	return (await GET(`${VIDEO_API_URL}/cover/preUpload`, { credentials: "include" })) as GetVideoCoverUploadSignedUrlResponseDto;
+	return (await GET(`${VIDEO_API_URI}/cover/preUpload`, { credentials: "include" })) as GetVideoCoverUploadSignedUrlResponseDto;
 }
 
 /**
@@ -228,7 +227,7 @@ export async function uploadVideoCover(fileName: string, videoCoverBlobData: Blo
  * @returns 上传视频的请求响应
  */
 export async function commitVideo(uploadVideoRequest: UploadVideoRequestDto): Promise<UploadVideoResponseDto> {
-	return await POST(`${VIDEO_API_URL}/upload`, uploadVideoRequest, { credentials: "include" }) as UploadVideoResponseDto;
+	return await POST(`${VIDEO_API_URI}/upload`, uploadVideoRequest, { credentials: "include" }) as UploadVideoResponseDto;
 }
 
 /**
@@ -237,7 +236,7 @@ export async function commitVideo(uploadVideoRequest: UploadVideoRequestDto): Pr
  * @returns 删除一个视频的请求响应
  */
 export async function deleteVideo(deleteVideoRequest: DeleteVideoRequestDto): Promise<DeleteVideoResponseDto> {
-	return await DELETE(`${VIDEO_API_URL}/delete`, deleteVideoRequest, { credentials: "include" }) as DeleteVideoResponseDto;
+	return await DELETE(`${VIDEO_API_URI}/delete`, deleteVideoRequest, { credentials: "include" }) as DeleteVideoResponseDto;
 }
 
 /**
@@ -248,7 +247,7 @@ export async function deleteVideo(deleteVideoRequest: DeleteVideoRequestDto): Pr
 export const getPendingReviewVideo = async (headerCookie: { cookie?: string | undefined }): Promise<PendingReviewVideoResponseDto> => {
 	// NOTE: use { headers: headerCookie } to passing client-side cookies to backend API when SSR.
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
-	const { data: result } = await useFetch(`${VIDEO_API_URL}/pending`, { headers: headerCookie, credentials: "include" });
+	const { data: result } = await useFetch(`${VIDEO_API_URI}/pending`, { headers: headerCookie, credentials: "include" });
 	return result.value as PendingReviewVideoResponseDto;
 };
 
@@ -258,5 +257,5 @@ export const getPendingReviewVideo = async (headerCookie: { cookie?: string | un
  * @returns 通过一个待审核视频的请求响应
  */
 export async function approvePendingReviewVideo(approvePendingReviewVideoRequest: ApprovePendingReviewVideoRequestDto): Promise<ApprovePendingReviewVideoResponseDto> {
-	return await POST(`${VIDEO_API_URL}/pending/approved`, approvePendingReviewVideoRequest, { credentials: "include" }) as ApprovePendingReviewVideoResponseDto;
+	return await POST(`${VIDEO_API_URI}/pending/approved`, approvePendingReviewVideoRequest, { credentials: "include" }) as ApprovePendingReviewVideoResponseDto;
 }

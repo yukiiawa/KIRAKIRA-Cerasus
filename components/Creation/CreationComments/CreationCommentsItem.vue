@@ -223,54 +223,48 @@
 
 <template>
 	<Comp>
-		<UserAvatar :avatar :uid />
-		<div class="content">
-			<div class="header">
-				<Icon v-if="pinned" name="pin" class="pin" />
-				<span v-if="nickname" class="nickname">{{ nickname }}</span>
-				<span v-if="username" class="username">@{{ username }}</span>
-			</div>
+		<UserContent :avatar :uid :nickname :username :date :index :pinned>
 			<div class="comments">
 				<slot></slot>
 			</div>
-			<div class="footer">
-				<div class="left">
-					<div v-if="index !== undefined">#{{ index }}</div>
-					<div><DateTime :dateTime="date" showTime /></div>
-					<div class="votes-wrapper">
-						<div class="votes">
-							<SoftButton v-tooltip:bottom="t.upvote" icon="thumb_up" :active="isUpvoted" @click="onClickVotes('upvote')" />
-							<span v-if="upvote">{{ upvote }}</span>
-						</div>
-						<div class="votes">
-							<SoftButton v-tooltip:bottom="t.downvote" icon="thumb_down" :active="isDownvoted" @click="onClickVotes('downvote')" />
-							<span v-if="downvote">{{ downvote }}</span>
-						</div>
+
+			<template #footerLeft>
+				<div class="votes-wrapper">
+					<div class="votes">
+						<SoftButton v-tooltip:bottom="t.upvote" icon="thumb_up" :active="isUpvoted" @click="onClickVotes('upvote')" />
+						<span v-if="upvote">{{ upvote }}</span>
+					</div>
+					<div class="votes">
+						<SoftButton v-tooltip:bottom="t.downvote" icon="thumb_down" :active="isDownvoted" @click="onClickVotes('downvote')" />
+						<span v-if="downvote">{{ downvote }}</span>
 					</div>
 				</div>
-				<div class="right">
-					<SoftButton v-tooltip:bottom="t.reply" icon="reply" />
-					<SoftButton v-tooltip:bottom="t.more" icon="more_vert" @click="e => menu = [e, 'y']" />
-					<Menu v-model="menu">
-						<MenuItem v-if="isSelfComment" icon="delete" @click="deleteSelfComment(commentRoute, videoId)">{{ t.delete }}</MenuItem>
-						<!-- TODO: 使用多语言 -->
-						<MenuItem v-if="isAdmin" icon="delete" @click="adminDeleteVideoComment(commentRoute, videoId)">{{ t.delete }}（管理员）</MenuItem>
-						<MenuItem :icon="unpinnedCaption" @click="pinned = !pinned">{{ t[unpinnedCaption] }}</MenuItem>
-						<hr />
-						<MenuItem icon="flag">{{ t.report }}</MenuItem>
-					</Menu>
-				</div>
-			</div>
-		</div>
+			</template>
+
+			<template #footerRight>
+				<SoftButton v-tooltip:bottom="t.reply" icon="reply" />
+				<SoftButton v-tooltip:bottom="t.more" icon="more_vert" @click="e => menu = [e, 'y']" />
+				<Menu v-model="menu">
+					<MenuItem v-if="isSelfComment" icon="delete" @click="deleteSelfComment(commentRoute, videoId)">{{ t.delete }}</MenuItem>
+					<!-- TODO: 使用多语言 -->
+					<MenuItem v-if="isAdmin" icon="delete" @click="adminDeleteVideoComment(commentRoute, videoId)">{{ t.delete }}（管理员）</MenuItem>
+					<MenuItem :icon="unpinnedCaption" @click="pinned = !pinned">{{ t[unpinnedCaption] }}</MenuItem>
+					<hr />
+					<MenuItem icon="flag">{{ t.report }}</MenuItem>
+				</Menu>
+			</template>
+		</UserContent>
 	</Comp>
 </template>
 
 <style scoped lang="scss">
 	:comp {
-		display: flex;
-		gap: 16px;
-		margin: 20px 0;
-		color: c(text-color);
+		position: relative;
+		padding: 16px 0;
+
+		// &:not(:last-child) {
+		// 	border-bottom: 1px solid c(divider, 10%);
+		// }
 
 		.content {
 			width: 100%;
@@ -281,24 +275,8 @@
 		}
 	}
 
-	.header {
-		display: flex;
-		gap: 4px;
-		align-items: center;
-
-		.icon.pin {
-			color: c(icon-color);
-			font-size: 20px;
-		}
-
-		.nickname {
-			font-size: 16px;
-			font-weight: bold;
-		}
-
-		.username {
-			color: c(icon-color);
-		}
+	.user-content {
+		width: 100%;
 	}
 
 	.comments {
@@ -311,13 +289,6 @@
 	}
 
 	.footer {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 5px;
-		justify-content: space-between;
-		color: c(icon-color);
-		font-size: 13px;
-
 		> * {
 			display: flex;
 			flex-shrink: 0;
@@ -331,20 +302,12 @@
 
 		.votes-wrapper {
 			display: flex;
-			gap: 14px;
+			gap: 8px;
 		}
 
 		.votes {
 			display: flex;
-			gap: 11px;
 			align-items: center;
-			cursor: pointer;
-		}
-
-		.soft-button {
-			--wrapper-size: 20px;
-			--ripple-size: 40px;
-			--icon-size: 18px;
 		}
 	}
 </style>

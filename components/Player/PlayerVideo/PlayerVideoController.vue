@@ -347,7 +347,7 @@
 			right: 0;
 			bottom: 0;
 			left: 0;
-			backdrop-filter: blur(8px);
+			backdrop-filter: blur(16px);
 			transition: $fallback-transitions, background-color 0s;
 
 			&.mobile {

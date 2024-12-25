@@ -269,7 +269,7 @@
 		</div>
 
 		<div class="change-avatar" @click="handleUploadAvatarImage">
-			<UserAvatar :avatar="correctAvatar" />
+			<UserAvatar :avatar="correctAvatar" hoverable />
 			<span>{{ t.profile.edit_avatar }}</span>
 			<input ref="userAvatarFileInput" type="file" accept="image/*" hidden />
 		</div>

@@ -99,7 +99,7 @@
 			const value = map(position, 0, max - thumbSize, props.min, props.max);
 			const steppedValue = roundToStep(value, props.step);
 			model.value = steppedValue;
-			pendingValue.value = steppedValue;
+			pendingValue.value = map(steppedValue, props.min, props.max, 0, 1);
 			emits("changing", value);
 		});
 		const pointerUp = (e: PointerEvent) => {
@@ -146,8 +146,8 @@
 		if (isInPath(e, thumbEl)) return;
 		if (showPendingState.value === "")
 			showPendingState.value = "hovering";
-		// if (showPendingState.value === "hovering")
-		// 	pendingValue.value = props.pending === "cursor" ? getPointerOnTrackValue(e) : value.value;
+		if (showPendingState.value === "hovering")
+			pendingValue.value = props.pending === "cursor" ? map(getPointerOnTrackValue(e), props.min, props.max, 0, 1) : value.value;
 	}
 
 	/**
@@ -180,7 +180,7 @@
 
 	const displayValue = computed(() =>
 		(typeof props.displayValue === "function" ? props.displayValue(pendingValue.value) : props.displayValue)
-		?? pendingValue.value);
+		?? map(pendingValue.value, 0, 1, props.min, props.max));
 </script>
 
 <template>

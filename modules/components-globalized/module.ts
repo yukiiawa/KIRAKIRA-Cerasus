@@ -6,7 +6,7 @@ import { environment } from "../../utils/environment";
 
 type WatchEvent = "update" | "remove";
 type Initial = (event?: WatchEvent, path?: string[]) => Promise<void>;
-const filenameWithoutExtension = (filename: string) => parse(filename).name;
+const fileRoot = (filename: string) => parse(filename).name;
 
 export default defineNuxtModule({
 	setup(_options, nuxt) {
@@ -50,7 +50,7 @@ export default defineNuxtModule({
 					result += `\texport const ${component.name}: typeof import("${component.path}")["${component.member}"];\n`;
 				result += "\n\t// classes\n";
 				for (const klass of classes)
-					result += `\texport { ${filenameWithoutExtension(klass)} } from "../classes/${klass}";\n`;
+					result += `\texport { ${fileRoot(klass)} } from "../classes/${klass}";\n`;
 				result += "}\n\nexport { };\n";
 				return result;
 			})());
@@ -70,7 +70,7 @@ export default defineNuxtModule({
 				for (const filename of files) {
 					const filedir = resolve(filePath, filename);
 					const stats = await lstat(filedir);
-					const basename = filenameWithoutExtension(filename);
+					const basename = fileRoot(filename);
 					if (stats.isFile()) {
 						carrier.push([...parents, basename].join("/"));
 						reg.push([...parents, filename].join("/"));

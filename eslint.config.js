@@ -6,7 +6,7 @@ import stylistic from "@stylistic/eslint-plugin";
 import tseslint from "typescript-eslint";
 import pluginVue from "eslint-plugin-vue";
 
-/** @type {import("eslint").Linter.FlatConfig[]} */
+/** @type {import("eslint").Linter.Config[]} */
 export default [
 	eslint.configs.recommended,
 	...tseslint.configs.recommended,
@@ -33,8 +33,9 @@ export default [
 				parser: {
 					ts: tseslint.parser,
 				},
-				sourceType: "module",
-				ecmaVersion: "latest",
+				project: true,
+				tsconfigRootDir: import.meta.dirname,
+				extraFileExtensions: [".vue"],
 			},
 			ecmaVersion: "latest",
 			sourceType: "module",
@@ -143,8 +144,8 @@ export default [
 			"no-use-before-define": "off",
 			"accessor-pairs": "off",
 			"no-empty-function": "off",
-			"require-jsdoc": "error",
-			"valid-jsdoc": ["error", {
+			"require-jsdoc": "off", // 两个 JSDoc 相关的规则已被 ESLint 弃用了。
+			"valid-jsdoc": ["off", {
 				requireReturn: false,
 				requireParamType: false, // TypeScript 不需要 JSDoc 的 type。
 				requireReturnType: false,
@@ -167,7 +168,8 @@ export default [
 				enforceForJSX: true,
 			}],
 			"@stylistic/max-statements-per-line": "off",
-			// "no-useless-assignment": "error", // TODO: ESLint 9.0 及其之后才开始支持
+			"no-useless-assignment": "error",
+			"no-control-regex": "off",
 			"import/order": "off", // 与 VSCode 内置导入排序特性打架。
 			"import/first": "off", // 与 Vue 特性冲突。
 			"import/named": "off", // 与 TypeScript 特性冲突。
@@ -181,6 +183,7 @@ export default [
 				varsIgnorePattern: "^_|^props$|^emits$",
 				caughtErrorsIgnorePattern: "^_",
 			}],
+			"no-unused-private-class-members": "warn",
 			"@typescript-eslint/no-inferrable-types": ["error", { ignoreParameters: true, ignoreProperties: true }],
 			"@typescript-eslint/no-non-null-assertion": "off",
 			"@typescript-eslint/triple-slash-reference": "off",
@@ -201,7 +204,6 @@ export default [
 					requireLast: false,
 				},
 			}],
-			"@typescript-eslint/semi": ["error", "always"],
 			"@typescript-eslint/no-explicit-any": "error",
 			"@typescript-eslint/no-use-before-define": ["warn", {
 				functions: false,
@@ -213,9 +215,40 @@ export default [
 			"@stylistic/indent-binary-ops": "error",
 			"@stylistic/type-generic-spacing": "error",
 			"@stylistic/type-named-tuple-spacing": "error",
-			// "@typescript-eslint/no-confusing-void-expression": "error",
-			// "@typescript-eslint/no-floating-promises": "error",
-			// 嗯对这几个不晓得怎么用不了。
+			"@typescript-eslint/no-confusing-void-expression": "off", // 不是很好用。
+			"@typescript-eslint/no-floating-promises": "off", // 不是很好用。
+			"@typescript-eslint/no-unnecessary-boolean-literal-compare": "error",
+			"@typescript-eslint/strict-boolean-expressions": ["off", { // 如需检查错误时可再临时手动开启。
+				"allowString": false,
+				"allowNumber": false,
+				"allowNullableObject": false,
+				"allowNullableBoolean": true,
+				"allowNullableString": false,
+				"allowNullableNumber": false,
+				"allowNullableEnum": false,
+				"allowAny": false,
+			}],
+			"@typescript-eslint/no-unnecessary-type-assertion": "error",
+			"@typescript-eslint/no-unnecessary-type-constraint": "error",
+			"@typescript-eslint/no-unnecessary-type-parameters": "error",
+			"@typescript-eslint/no-unnecessary-type-arguments": "error",
+			"@typescript-eslint/no-unnecessary-template-expression": "error",
+			"@typescript-eslint/no-unnecessary-qualifier": "off", // 开启后，某些包含复杂类型的特殊文件会把 eslint 弄崩。
+			"@typescript-eslint/no-unnecessary-parameter-property-assignment": "error",
+			"@typescript-eslint/no-unnecessary-condition": ["off", { allowConstantLoopConditions: true }],
+			"@typescript-eslint/no-empty-object-type": "off",
+			"react-refresh/only-export-components": [
+				"off",
+				{ allowConstantExport: true },
+			],
+			"@typescript-eslint/no-unsafe-function-type": "off",
+			"@typescript-eslint/no-unused-expressions": ["error", {
+				allowShortCircuit: true,
+				allowTernary: true,
+				enforceForJSX: true,
+			}],
+			// "@typescript-eslint/prefer-readonly-parameter-types": "error",
+			"@typescript-eslint/prefer-reduce-type-parameter": "error",
 			"vue/html-indent": ["error", "tab"],
 			"vue/script-indent": ["error", "tab", {
 				baseIndent: 1,
@@ -384,6 +417,9 @@ export default [
 			}, {
 				name: "outerWidth",
 				message: "Please use window.outerWidth instead.",
+			}, {
+				name: "open",
+				message: "Please use window.open instead.",
 			}, /* {
 				name: "Number",
 				message: "Use + instead.",
@@ -392,7 +428,7 @@ export default [
 				message: "Use !! instead.",
 			} */],
 			"no-restricted-syntax": ["error", {
-				selector: "VariableDeclaration[kind = 'let'] > VariableDeclarator[init = null]:not([id.typeAnnotation])",
+				selector: ":not(ForOfStatement, ForInStatement) > VariableDeclaration[kind = 'let'] > VariableDeclarator[init = null]:not([id.typeAnnotation])",
 				message: "Type must be inferred at variable declaration",
 			}],
 		},

@@ -52,6 +52,7 @@
 	const httpCodes = getPages(
 		233,
 		301,
+		403,
 		404,
 		500,
 		502,

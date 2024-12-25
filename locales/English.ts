@@ -89,6 +89,7 @@ export default {
 	account: "Account",
 	profile: {
 		_: "Profile",
+		edit: "Edit Profile",
 		edit_banner: "Edit Banner",
 		edit_avatar: "Edit Avatar",
 	},
@@ -291,6 +292,7 @@ export default {
 		failed: "Copy Failed!",
 	},
 	pin: "Pin",
+	pinned: "Pinned",
 	unpin: "Unpin",
 	report: "Report",
 	original: "Original",

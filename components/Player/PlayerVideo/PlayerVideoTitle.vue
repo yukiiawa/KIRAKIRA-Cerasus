@@ -53,7 +53,7 @@
 		width: 100%;
 		padding: 8px 20px;
 		color: c(icon-color);
-		backdrop-filter: blur(8px);
+		backdrop-filter: blur(16px);
 		pointer-events: none;
 		transition: $fallback-transitions, background-color 0s;
 

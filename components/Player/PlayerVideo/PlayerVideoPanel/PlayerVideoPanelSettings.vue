@@ -98,7 +98,7 @@
 							<template #image>
 								<NuxtImg
 									:style
-									provider="kirakira"
+									:provider="environment.cloudflareImageProvider"
 									:src="thumbnail"
 									:alt="`preview-${filter}`"
 									:draggable="false"

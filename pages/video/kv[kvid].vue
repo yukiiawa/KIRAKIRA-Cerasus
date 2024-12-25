@@ -91,9 +91,17 @@
 					<Preserves>{{ videoDetails?.description }}</Preserves>
 				</p>
 
-				<CreationComments
-					:videoId="kvid"
-				/>
+				<!-- 尝试减少SSR时页面上评论的比重来让谷歌索引视频，还不确定是否行。 -->
+				<ClientOnly>
+					<CreationComments
+						:videoId="kvid"
+					/>
+					<template #fallback>
+						<div class="comments-loading">
+							<ProgressRing />
+						</div>
+					</template>
+				</ClientOnly>
 			</div>
 			<div class="right">
 				<CreationUploader
@@ -168,5 +176,10 @@
 	.container {
 		max-width: 1920px;
 		margin: 0 auto;
+	}
+
+	.comments-loading {
+		@include flex-center;
+		width: 100%;
 	}
 </style>

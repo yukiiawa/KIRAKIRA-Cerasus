@@ -44,7 +44,7 @@
 			<div class="cover-wrapper">
 				<NuxtImg
 					v-if="image"
-					provider="kirakira"
+					:provider="environment.cloudflareImageProvider"
 					:src="image"
 					alt="cover"
 					class="cover"
@@ -64,7 +64,7 @@
 							<p>{{ watchedCount }}</p>
 						</div>
 						<div class="item">
-							<Icon name="time" />
+							<Icon name="duration" />
 							<p>{{ duration }}</p>
 						</div>
 					</div>
