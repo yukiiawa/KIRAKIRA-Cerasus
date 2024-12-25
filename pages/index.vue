@@ -36,6 +36,7 @@
 				{{ t.category[cat.toLowerCase()] }}
 			</TabItem>
 		</TabBar>
+		<!-- TODO: 使用多语言 -->
 		<InfoBar title="公告" lite>
 			目前网站仍然处于早期的公测中，由于用户数量增长速度远超预期，站娘已暂停发放邀请码，请不要一直私聊啦！
 			<br />

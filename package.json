@@ -133,6 +133,7 @@
 		"nuxt-icons": "^3.2.1",
 		"path-browserify-es": "^1.1.0",
 		"pinia": "^2.2.2",
+		"qrcode.vue": "^3.4.1",
 		"shaka-player": "^4.10.11",
 		"tus-js-client": "^4.1.0",
 		"vue-audio-visual": "^3.0.8",
