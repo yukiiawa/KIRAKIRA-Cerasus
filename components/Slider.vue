@@ -48,7 +48,20 @@
 	if (model.value > props.max)
 		throw new RangeError("Slider 的值比最大值要大。" + errorInfo);
 
-	const restrict = (n: number | undefined, nanValue: number) => Number.isFinite(n) ? clamp(map(n!, props.min, props.max, 0, 1), 0, 1) : nanValue;
+	const restrict = (n: number | undefined, nanValue: number): number => {
+		if (
+			typeof props.min !== "number" ||
+			typeof props.max !== "number" ||
+			!Number.isFinite(props.min) ||
+			!Number.isFinite(props.max)
+		)
+			return nanValue;
+
+		return typeof n === "number" && Number.isFinite(n)
+			? clamp(map(n, props.min, props.max, 0, 1), 0, 1)
+			: nanValue;
+	};
+
 	const value = computed(() => restrict(model.value, 0));
 	const smoothValue = useSmoothValue(value, 0.5); // 修改这个参数可以调整滑动条的平滑移动值。
 	const thumbEl = ref<HTMLDivElement>(), trackEl = ref<HTMLDivElement>();
