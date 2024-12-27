@@ -224,8 +224,8 @@
 					class="buffered"
 					:key="index"
 					:style="{
-						left: start === 0 ? '0' : `calc((100% - var(--thumb-size)) * ${start} + var(--thumb-size))`,
-						width: `calc((100% - var(--thumb-size)) * ${end - start})`,
+						left: start <= 0.001 ? '0' : `calc((100% - var(--thumb-size)) * ${start} + var(--thumb-size))`,
+						width: start <= 0.001 ? `calc((100% - var(--thumb-size)) * ${end - start} + var(--thumb-size))` : `calc((100% - var(--thumb-size)) * ${end - start})`,
 					}"
 				></div>
 			</div>
