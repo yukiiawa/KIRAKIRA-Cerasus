@@ -40,7 +40,7 @@
 	 * @param e - 鼠标事件。
 	 */
 	function onClick(e: MouseEvent) {
-		if(!props.to) parent?.exposed?.changeTab(props.id);
+		if (!props.to) parent?.exposed?.changeTab(props.id);
 		emits("click", e, props.id);
 	}
 </script>
@@ -75,6 +75,7 @@
 		position: relative;
 		flex-shrink: 0;
 		color: c(icon-color);
+		font-weight: 500;
 		cursor: pointer;
 
 		&:any-hover {
@@ -85,7 +86,6 @@
 
 		&.active {
 			color: c(accent);
-			font-weight: bold;
 
 			&:deep(.ripple-circle),
 			.horizontal-ripple:hover {
@@ -166,6 +166,7 @@
 
 			&.active {
 				color: c(accent);
+				font-weight: bold;
 				background-color: c(accent-hover-overlay);
 			}
 
