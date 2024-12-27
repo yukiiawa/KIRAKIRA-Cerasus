@@ -162,6 +162,8 @@ export default {
 		error: {
 			getDanmaku: "弾幕リストの取得に失敗しました。",
 		},
+		playlist: {},
+		playback_order: {},
 	},
 	danmaku: {
 		_: "弾幕",
@@ -477,4 +479,5 @@ export default {
 		_: "招待コード",
 		invalid: "無効な招待コード",
 	},
+	version: "バージョン",
 } as const satisfies LocaleIdentifiers;

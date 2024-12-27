@@ -158,6 +158,18 @@ export default {
 		},
 		error: {
 			getDanmaku: "Failed to get danmaku list",
+			loadMedia: "Failed to load media",
+		},
+		playlist: {
+			add_to_playlist: "Add to Playlist",
+			remove_from_playlist: "Remove from Playlist",
+		},
+		playback_order: {
+			_: "Playback Order",
+			sequential: "Sequential",
+			repeat_all: "Repeat All",
+			repeat_one: "Repeat One",
+			shuffle: "Shuffle",
 		},
 	},
 	danmaku: {
