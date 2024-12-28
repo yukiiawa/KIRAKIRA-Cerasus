@@ -75,7 +75,6 @@
 		position: relative;
 		flex-shrink: 0;
 		color: c(icon-color);
-		font-weight: 500;
 		cursor: pointer;
 
 		&:any-hover {
@@ -96,6 +95,7 @@
 		.tab-bar:not(.vertical) & {
 			padding: 8px 10px;
 			overflow: visible;
+			font-weight: 500;
 
 			@container style(--loose: true) {
 				padding: 16px;
