@@ -34,7 +34,7 @@ export async function cookieBaker() {
 		const uid = cookieUid.value;
 		const token = cookieToken.value;
 
-		let userSettings;
+		let userSettings: GetUserSettingsResponseDto | undefined = undefined;
 		if (
 			typeof isAllowSyncThemeSettings.value === "boolean" && isAllowSyncThemeSettings.value === true
 			&& uid !== null && uid !== undefined && token
@@ -173,7 +173,7 @@ export class SyncUserSettings {
 	 */
 	public static updateOrCreateUserThemeTypeSetting(cookieValue: ThemeSetType) {
 		const updateOrCreateUserSettingsRequest: UpdateOrCreateUserSettingsRequestDto = {
-			themeType: cookieValue as ThemeSetType,
+			themeType: cookieValue,
 		};
 		api.user.updateUserSettings(updateOrCreateUserSettingsRequest);
 	}

@@ -87,8 +87,9 @@
 
 	/**
 	 * 发送登录验证码
+	 * @returns 是否成功发送登录验证码
 	 */
-	async function sentLoginVerificationCode() {
+	async function sentLoginVerificationCode(): Promise<boolean> {
 		try {
 			const passwordStr = password.value;
 			const passwordHash = await generateHash(password.value);
@@ -97,7 +98,7 @@
 
 			if (!passwordStr || !emailStr || !passwordHash) {
 				useToast("发送登录验证码失败，用户名和密码不能为空！", "error", 5000); // TODO: 使用多语言
-				return;
+				return false;
 			}
 
 			const sendUserEmailAuthenticatorVerificationCodeRequest: SendUserEmailAuthenticatorVerificationCodeRequestDto = {
@@ -111,16 +112,20 @@
 			if (!sendUserEmailAuthenticatorVerificationCodeResult.success) {
 				useToast("发送登录验证码失败，发送失败，请稍后再试！", "error", 5000); // TODO: 使用多语言
 				currentPage.value = "login1";
-				return;
+				return false;
 			}
 
 			if (sendUserEmailAuthenticatorVerificationCodeResult.isCoolingDown) {
 				useToast("发送登录验证码失败，正在冷却中！", "warning", 5000); // TODO: 使用多语言
 				currentPage.value = "login1";
-				return;
+				return false;
 			}
-		} catch (error) {
 
+			return true;
+		} catch (error) {
+			useToast("发送登录验证码失败，请刷新页面", "error", 5000); // TODO: 使用多语言
+			currentPage.value = "login1";
+			return false;
 		}
 	}
 
@@ -152,8 +157,9 @@
 			// 如果有 2FA，则跳转到对应的 2FA 登录页面，如果没有 2FA 则直接登录
 			if (check2FAByEmailResult.have2FA)
 				if (check2FAByEmailResult.type === "email") {
-					await sentLoginVerificationCode();
-					currentPage.value = "login2-email";
+					const sendResult = await sentLoginVerificationCode();
+					if (sendResult) // 如果成功发送则进入下一页，否则在原地等待。
+						currentPage.value = "login2-email";
 				} else
 					currentPage.value = "login2-2fa";
 				
