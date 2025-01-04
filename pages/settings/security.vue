@@ -53,7 +53,7 @@
 	const isTotp2FADisable = computed(() => checkUser2FAResult.value?.type === "email" || categoryOf2FAComputed.value === "email");
 
 	// 警告相关
-	const isUnsafeAccount = computed(() => selfUserInfo.isLogined && appSettings.typeOf2FA === "none" && !checkUser2FAResult.value?.have2FA);
+	const isUnsafeAccount = computed(() => selfUserInfo.isLogined && (appSettings.typeOf2FA === "none" || !checkUser2FAResult.value?.have2FA));
 
 	// 创建 TOTP 2FA 相关
 	const showCreateTotpModel = ref(false); // 是否显示创建 TOTP 模态框
