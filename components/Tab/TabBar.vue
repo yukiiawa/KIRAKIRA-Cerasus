@@ -14,7 +14,7 @@
 		movingForTransition: [transition: string];
 	}>();
 
-	const model = defineModel<string>({ required: true });
+	const model = defineModel<string>();
 	const { RenderComp, slotNode } = useFactory();
 
 	const tabBarInline = ref<HTMLSpanElement>();
@@ -26,7 +26,7 @@
 	const tabBarInlineResizeObserver = ref<ResizeObserver>();
 	const arrivedState = ref({ left: false, right: false }); // 用以解决 useScroll 自带 arrivedState 属性的功能实现缺陷。
 	const longPressTimeoutId = ref<Timeout>();
-	const clearLongPressTimeoutId = () => clearInterval(longPressTimeoutId.value!);
+	const clearLongPressTimeoutId = () => clearInterval(longPressTimeoutId.value);
 
 	/**
 	 * 根据标识符切换选项卡。
@@ -128,7 +128,7 @@
 		prevId?: string | typeof updateIndicatorWithoutAnimation,
 	) {
 		if (isUpdating) return;
-		const LENGTH = 16; // 指定选项卡指示器的最大长度。
+		const LENGTH = props.vertical ? 16 : 20; // 指定选项卡指示器的最大长度。
 		id ??= model.value;
 		if (!indicator.value) return;
 		const indicatorStyle = indicator.value.style;
@@ -162,16 +162,15 @@
 		isUpdating = false;
 		const setPosition1 = () => style[prev] = itemPosEntry[prev];
 		const setPosition2 = () => style[next] = itemPosEntry[next];
-		const delayTime = () => delay(100);
 		switch (movement) {
 			case "previous":
+				indicatorStyle.transitionProperty = "scale, left, top, right, bottom";
 				setPosition1();
-				await delayTime();
 				setPosition2();
 				break;
 			case "next":
+				indicatorStyle.transitionProperty = "scale, right, bottom, left, top";
 				setPosition2();
-				await delayTime();
 				setPosition1();
 				break;
 			case "fade":
@@ -242,7 +241,7 @@
 			right: el.scrollLeft < el.scrollWidth - el.offsetWidth - 1,
 		};
 	}
-	
+
 	/**
 	 * 请求刷新指示器位置。
 	 */
@@ -314,6 +313,10 @@
 		@include no-scrollar;
 		overflow: clip;
 		overflow-x: auto;
+
+		@container style(--full: true) {
+			overflow-x: clip;
+		}
 	}
 
 	.items {
@@ -373,6 +376,9 @@
 		height: $thickness;
 		margin-top: -$thickness;
 		background-color: c(accent);
+		transition-duration: 200ms, 300ms, 300ms, 500ms, 500ms;
+		transition-timing-function: $ease-out-expo, $ease-out-circ, $ease-out-circ, $ease-in-out-material-emphasized, $ease-in-out-material-emphasized;
+		transition-property: scale;
 
 		@container style(--clipped: true) {
 			@include oval(top);

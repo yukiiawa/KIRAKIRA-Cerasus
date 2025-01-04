@@ -48,7 +48,6 @@
 <template>
 	<component
 		:is="props.to ? LocaleLink : 'span'"
-		v-ripple="vertical"
 		:class="{ active, vertical: direction.includes('vertical') }"
 		role="tab"
 		:aria-selected="active"
@@ -57,20 +56,22 @@
 		class="tab-item lite"
 		@click="onClick"
 	>
-		<!-- <div v-if="!vertical" v-ripple class="horizontal-ripple"></div> -->
-		<div class="content" :style="{ flexDirection }">
-			<div v-if="icon" class="icon-wrapper">
-				<Icon :name="icon" />
+		<div>
+			<div v-ripple :style="{ flexDirection }">
+				<div class="content">
+					<div v-if="icon" class="icon-wrapper">
+						<Icon :name="icon" />
+					</div>
+					<span><slot></slot></span>
+					<Badge class="badge"><slot name="badge">{{ badge }}</slot></Badge>
+				</div>
 			</div>
-			<span><slot></slot></span>
-			<Badge class="badge"><slot name="badge">{{ badge }}</slot></Badge>
 		</div>
 	</component>
 </template>
 
 <style scoped lang="scss">
 	.tab-item {
-		@include round-small;
 		@include flex-center;
 		position: relative;
 		flex-shrink: 0;
@@ -78,27 +79,53 @@
 		cursor: pointer;
 
 		&:any-hover {
-			.horizontal-ripple {
+			color: c(text-color);
+
+			> div > div {
 				background-color: c(hover-overlay);
 			}
 		}
 
+		&:active .content {
+			@include scale-pressed;
+		}
+
 		&.active {
+			@include accent-ripple;
 			color: c(accent);
 
-			&:deep(.ripple-circle),
-			.horizontal-ripple:hover {
-				background-color: c(accent-ripple);
+			&:any-hover > div > div {
+				background-color: c(accent-hover-overlay);
 			}
 		}
 
 		.tab-bar:not(.vertical) & {
-			padding: 8px 10px;
-			overflow: visible;
+			height: 36px;
 			font-weight: 500;
 
 			@container style(--loose: true) {
-				padding: 16px;
+				height: 48px;
+			}
+
+			> div {
+				@include ripple-clickable-only-inside(calc(100% + 16px));
+				height: unset;
+				aspect-ratio: 1;
+
+				> div {
+					@include circle;
+					justify-content: center;
+					align-items: center;
+					padding: 0 10px;
+
+					&:is(:hover, :active, :has(> .ripple-circle)):not(:focus-visible) {
+						@include square(calc(100% + 16px));
+					}
+
+					@container style(--loose: true) {
+						padding: 0 16px;
+					}
+				}
 			}
 		}
 
@@ -107,15 +134,19 @@
 			flex-grow: 1;
 		}
 
-		.horizontal-ripple {
-			@include circle;
-			content: "";
-			position: absolute;
-			width: calc(100% + 16px);
-			aspect-ratio: 1 / 1;
+		> div {
+			@include square(100%);
+			@include flex-center;
+
+			> div {
+				@include square(100%);
+				display: flex;
+				flex-shrink: 0;
+			}
 		}
 
 		.content {
+			@include square(100%);
 			@include flex-center;
 			flex-shrink: 0;
 			gap: 4px;
@@ -149,33 +180,44 @@
 		.tab-bar.vertical & {
 			justify-content: flex-start;
 			width: 100%;
-			padding: 8px 12px;
 
 			&:any-hover {
-				color: c(text-color);
-				background-color: c(hover-overlay);
+				> div > div {
+					background-color: c(hover-overlay);
 
-				>* {
-					translate: 3px 0;
+					> .content {
+						translate: 3px 0;
+					}
 				}
 			}
 
-			&:not(:any-hover) > * {
+			&:not(:any-hover) > div > div > .content {
 				transition-duration: 1s;
 			}
 
 			&.active {
-				color: c(accent);
 				font-weight: bold;
-				background-color: c(accent-hover-overlay);
+
+				> div > div {
+					background-color: c(accent-hover-overlay);
+				}
+			}
+
+			> div > div {
+				@include round-small;
+				padding: 8px 12px;
+
+				@include mobile {
+					padding: 10px 8px 10px 12px;
+				}
+			}
+
+			.content {
+				justify-content: flex-start;
 			}
 
 			.icon-wrapper {
 				margin-right: 8px;
-			}
-
-			@include mobile {
-				padding: 10px 8px 10px 12px;
 			}
 		}
 	}

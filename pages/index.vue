@@ -76,6 +76,11 @@
 
 	.tab-bar {
 		--loose: true;
+		margin: 0 (-$page-padding-x);
+
+		&:deep(.items) {
+			padding: 0 $page-padding-x;
+		}
 
 		:deep(.items > *) {
 			padding-bottom: 10px;
