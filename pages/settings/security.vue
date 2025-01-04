@@ -8,9 +8,6 @@
 	const appSettings = useAppSettingsStore();
 	const selfUserInfo = useSelfUserInfoStore();
 
-	// 警告相关
-	const isUnsafeAccount = computed(() => selfUserInfo.isLogined && appSettings.typeOf2FA === "none");
-
 	// 修改邮箱相关
 	const showChangeEmail = ref(false);
 	const changeEmailVerificationCode = ref("");
@@ -28,7 +25,7 @@
 	const isChangingPassword = ref(false);
 
 	// 2FA 相关
-	const checkUser2FAResult = ref<CheckUserHave2FAServiceResponseDto>(); // 获取到的用户 2FA 类型
+	const checkUser2FAResult = ref<CheckUserHave2FAResponseDto>(); // 获取到的用户 2FA 类型
 	const authenticatorAddDateDisplay = computed(() => formatDateWithLocale(new Date(checkUser2FAResult.value?.totpCreationDateTime ?? 0)));
 	type TypeOf2FA = "none" | "email" | "totp";
 	const categoryOf2FAComputed = computed<TypeOf2FA>({ // 2FA 的类型，带有副作用
@@ -44,12 +41,10 @@
 			} else if (appSettings.typeOf2FA === "email" && newValue !== "email" && checkUser2FAResult.value?.type === "email") {
 				// 当响应式变量从 email 改变为其他非 email 的值，且用户的 2FA 类型为 email 时，打开删除 Email 2FA 的模态框，且不会导致导致响应式变量的变更
 				openDeleteEmail2FAModel();
-				useToast("解除 Email 绑定后即可关闭 2FA", "warning", 5000);
-			} else if (newValue === "email" && appSettings.typeOf2FA !== "email" && checkUser2FAResult.value?.type !== "email") {
-				// 当响应式变量切换为 email 时，创建邮件 2FA
-				appSettings.typeOf2FA = newValue;
-				createEmail2FA();
-			} else
+				useToast("在关闭 2FA 之前必须验证你的邮箱。", "warning", 5000);
+			} else if (newValue === "email" && appSettings.typeOf2FA !== "email" && checkUser2FAResult.value?.type !== "email")
+				openCreateEmail2FAModel();
+			else
 				appSettings.typeOf2FA = newValue;
 		},
 	});
@@ -57,7 +52,10 @@
 	const isEmail2FADisable = computed(() => checkUser2FAResult.value?.type === "totp" || categoryOf2FAComputed.value === "totp");
 	const isTotp2FADisable = computed(() => checkUser2FAResult.value?.type === "email" || categoryOf2FAComputed.value === "email");
 
-	// 创建 TOTP 相关
+	// 警告相关
+	const isUnsafeAccount = computed(() => selfUserInfo.isLogined && appSettings.typeOf2FA === "none" && !checkUser2FAResult.value?.have2FA);
+
+	// 创建 TOTP 2FA 相关
 	const showCreateTotpModel = ref(false); // 是否显示创建 TOTP 模态框
 	const otpAuth = ref<string>(""); // TOTP AUTH（也就是二维码中的值）
 	const totpQrcodeLevel = ref<Level>("M"); // 二维码等级
@@ -69,11 +67,15 @@
 	const displayBackupCode = computed(() => backupCode.value.join("\t")); // 用于显示的备份码，中间用 TAB 隔开
 	const recoveryCode = ref(""); // 恢复码
 
-	// 删除 TOTP 相关
+	// 删除 TOTP 2FA 相关
 	const showDeleteTotpModel = ref(false); // 是否显示删除 TOTP 的模态框
 	const deleteTotpVerificationCode = ref(""); // 删除 TOTP 时用户输入的验证码
 	const deleteTotpPassword = ref(""); // 删除 TOTP 时用户输入的密码
 	const isDeletingTotp = ref(false); // 是否正在删除 TOTP
+
+	// 创建 Email 2FA 相关
+	const showCreateEmail2FAModel = ref(false); // 是否显示创建 Email 2FA 的模态框
+	const isCreatingEmail2FA = ref(false); // 是否正在创建 Email 2FA
 
 	// 删除 Email 2FA 相关
 	const showDeleteEmail2FAModel = ref(false); // 是否显示删除 Email 2FA 的模态框
@@ -160,19 +162,41 @@
 	}
 
 	/**
+	 * 开启创建 Email 2FA 的模态框
+	 */
+	function openCreateEmail2FAModel() {
+		showCreateEmail2FAModel.value = true;
+	}
+
+	/**
+	 * 关闭创建 Email 2FA 的模态框
+	 */
+	function closeCreateEmail2FAModel() {
+		showCreateEmail2FAModel.value = false;
+	}
+
+	/**
 	 * 用户创建 Email 身份验证器
 	 */
 	async function createEmail2FA() {
+		isCreatingEmail2FA.value = true;
 		try {
 			const headerCookie = useRequestHeaders(["cookie"]);
 			const createEmail2FAResult = await api.user.createEmail2FA(headerCookie);
-			if (!createEmail2FAResult.success)
+			if (!createEmail2FAResult.success) {
 				useToast("开启邮箱双重验证失败，请稍后重试。", "error", 5000); // TODO: 使用多语言
+				isCreatingEmail2FA.value = false;
+			}
 
-			if (createEmail2FAResult.isExists)
+			if (createEmail2FAResult.isExists) {
 				useToast("你已经开启过一个 2FA，请刷新页面。", "warning", 5000); // TODO: 使用多语言
+				isCreatingEmail2FA.value = false;
+			}
 
-			useToast("已开启邮箱双重验证！", "success", 3000); // TODO: 使用多语言
+			isCreatingEmail2FA.value = false;
+			showCreateEmail2FAModel.value = false;
+			appSettings.typeOf2FA = "email";
+			useToast("成功开启邮箱双重验证！", "success", 3000); // TODO: 使用多语言
 			checkUserHave2FAByUUID();
 		} catch (error) {
 			useToast("开启邮箱双重验证时出错，请稍后重试。", "error", 5000); // TODO: 使用多语言
@@ -203,6 +227,12 @@
 	async function deleteEmail2FAByVerification() {
 		isDeletingEmail2FA.value = true;
 		try {
+			if (!deleteEmail2FAPassword.value || !deleteEmail2FAVerificationCode.value) {
+				isDeletingEmail2FA.value = false;
+				useToast("必填项为空。", "error", 5000); // TODO: 使用多语言
+				return;
+			}
+
 			const deleteUserEmailAuthenticatorRequest: DeleteUserEmailAuthenticatorRequestDto = {
 				passwordHash: await generateHash(deleteEmail2FAPassword.value),
 				verificationCode: deleteEmail2FAVerificationCode.value,
@@ -210,6 +240,7 @@
 			const headerCookie = useRequestHeaders(["cookie"]);
 			const deleteEmail2FAResult = await api.user.deleteEmail2FA(deleteUserEmailAuthenticatorRequest, headerCookie);
 			if (deleteEmail2FAResult.success) {
+				useToast("你已关闭邮箱验证码。", "success", 5000); // TODO: 使用多语言
 				closeDeleteEmail2FAModel();
 				await checkUserHave2FAByUUID();
 			} else {
@@ -368,7 +399,7 @@
 	<div>
 		<!-- TODO: 使用多语言 -->
 		<InfoBar v-if="isUnsafeAccount" type="warning" title="警告">
-			你还没有开启二重验证，建议您立即启用。
+			你还没有开启二重验证，建议你立即启用。
 			<br />
 			没有启动二重验证的账号更容易被盗号。
 		</InfoBar>
@@ -396,9 +427,9 @@
 			<!-- TODO: 使用多语言 -->
 			<RadioButton v-model="categoryOf2FAComputed" v-ripple value="none" details="关闭双重验证会降低账号安全性。">关闭</RadioButton>
 			<!-- TODO: 使用多语言 -->
-			<RadioButton v-model="categoryOf2FAComputed" v-ripple value="email" details="验证码将会直接发送到你的邮箱。" :disabled="isEmail2FADisable">邮箱验证码</RadioButton>
+			<RadioButton v-model="categoryOf2FAComputed" v-ripple value="email" details="敏感操作时，验证码将会直接发送到你的邮箱。" :disabled="isEmail2FADisable">邮箱验证码</RadioButton>
 			<!-- TODO: 使用多语言 -->
-			<RadioButton v-model="categoryOf2FAComputed" v-ripple value="totp" details="在你绑定了 TOTP 的设备中查看验证码。" :disabled="isTotp2FADisable">TOTP（基于时间的一次性密码）</RadioButton>
+			<RadioButton v-model="categoryOf2FAComputed" v-ripple value="totp" details="敏感操作时，需要在你绑定了 TOTP 的设备中查看验证码。" :disabled="isTotp2FADisable">TOTP（基于时间的一次性密码）</RadioButton>
 		</section>
 		<section v-if="categoryOf2FAComputed === 'totp'">
 			<!-- TODO: 使用多语言 -->
@@ -518,7 +549,20 @@
 		</Modal>
 
 		<!-- TODO: 使用多语言 -->
-		<Modal v-model="showDeleteEmail2FAModel" title="删除邮箱验证" icon="delete">
+		<Modal v-model="showCreateEmail2FAModel" title="确认开启邮箱验证" icon="lock">
+			<div>
+				<p>你注册时使用的邮箱是{{ t.colon + selfUserInfoStore.userEmail }}</p>
+				<p>请确保该邮箱仍在使用。</p>
+			</div>
+			<template #footer-right>
+				<Button class="secondary" :disabled="isCreatingEmail2FA" @click="closeCreateEmail2FAModel">{{ t.step.cancel }}</Button>
+				<!-- TODO: 使用多语言 -->
+				<Button @click="createEmail2FA" :disabled="isCreatingEmail2FA" :loading="isCreatingEmail2FA">开启邮箱验证</Button>
+			</template>
+		</Modal>
+
+		<!-- TODO: 使用多语言 -->
+		<Modal v-model="showDeleteEmail2FAModel" title="确认关闭邮箱验证" icon="delete">
 			<div class="delete-email-2fa-modal">
 				<form>
 					<TextBox v-model="deleteEmail2FAPassword" :required="true" type="password" icon="lock" :placeholder="t.password" autoComplete="current-password" />
@@ -527,7 +571,8 @@
 			</div>
 			<template #footer-right>
 				<Button class="secondary" :disabled="isDeletingEmail2FA" @click="closeDeleteEmail2FAModel">{{ t.step.cancel }}</Button>
-				<Button @click="deleteEmail2FAByVerification" :disabled="isDeletingEmail2FA" :loading="isDeletingEmail2FA">{{ t.delete }}</Button>
+				<!-- TODO: 使用多语言 -->
+				<Button @click="deleteEmail2FAByVerification" :disabled="isDeletingEmail2FA" :loading="isDeletingEmail2FA">关闭邮箱验证</Button>
 			</template>
 		</Modal>
 	</div>
