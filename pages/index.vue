@@ -71,7 +71,10 @@
 		display: flex;
 		flex-direction: column;
 		gap: 16px;
-		padding-top: 0 !important;
+
+		@include not-mobile {
+			padding-top: 0 !important;
+		}
 	}
 
 	.tab-bar {
@@ -82,8 +85,8 @@
 			padding: 0 $page-padding-x;
 		}
 
-		:deep(.items > *) {
-			padding-bottom: 10px;
+		@include mobile {
+			display: none;
 		}
 	}
 </style>
