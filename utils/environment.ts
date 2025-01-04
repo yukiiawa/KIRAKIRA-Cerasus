@@ -33,7 +33,7 @@ export const environment = {
 	},
 	/** cloudflare 的图片提供者的名字，生产环境时使用 cloudflare-prod，否则使用 cloudflare-stg */
 	get cloudflareImageProvider() {
-		const provider = import.meta.env.VITE_CLOUDFLARE_IMAGES_PROVIDER;
+		const provider = import.meta.env.VITE_CLOUDFLARE_IMAGES_PROVIDER as string;
 		if (!provider)
 			console.error("ERROR", "Server startup failed,  the value of the environment variable CLOUDFLARE_IMAGES_PROVIDER was not specified.");
 		if (provider === "cloudflare-prod" || provider === "cloudflare-stg")
