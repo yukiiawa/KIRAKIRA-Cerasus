@@ -58,6 +58,7 @@
 			if (isLogining.value) selfUserInfoStore.isLogined = true;
 			if (!value) selfUserInfoStore.tempHideAvatarFromSidebar = false;
 			isLogining.value = false;
+			currentPage.value = "login1";
 		},
 	});
 	const loginWindow = refComp();
