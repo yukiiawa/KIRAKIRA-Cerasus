@@ -639,10 +639,13 @@
 			gap: 24px;
 
 			.totp-qrcode-box {
-				display: flex;
+				display: inline-flex;
+				width: auto;
+				padding: 10px 0;
+				margin-left: 10px;
+				background-color: white;
 				flex-direction: column;
 				height: 200px;
-				margin: 5px 0 0 20px;
 			}
 
 			.totp-confirm-form {
