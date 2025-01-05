@@ -7,12 +7,11 @@ import cssDoodleLoader from "./plugins/vite/css-doodle";
 import docsLoader from "./plugins/vite/docs";
 import vitePluginScssVariables from "./plugins/vite/scss-variables";
 import scssVariablesLoader from "./plugins/vite/scss-variables-loader";
-import { environment } from "./utils/environment";
 /* import vueNestedSFC from "vite-plugin-vue-nested-sfc"; */
 type OriginalNuxtConfig = Parameters<typeof defineNuxtConfig>[0];
 type BroadNuxtConfig = OriginalNuxtConfig & Record<Exclude<string, keyof OriginalNuxtConfig>, object | string>; // 还敢报错吗？
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // 支持 HTTPS。
-const dev = environment.development;
+const dev = process.env.NODE_ENV === "development"; // WARN: Do not use `environment.development` or import environment in nuxt.config.ts!
 
 export default defineNuxtConfig({
 	devtools: {

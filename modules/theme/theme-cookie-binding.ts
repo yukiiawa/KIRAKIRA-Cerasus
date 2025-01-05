@@ -32,7 +32,7 @@ export const COOKIE_KEY = {
 };
 
 let lastClickMouseEvent: MouseEvent | undefined;
-if (process.client)
+if (environment.client)
 	document.addEventListener("click", e => lastClickMouseEvent = e, true);
 
 /**
