@@ -97,7 +97,7 @@
 			const locale = getCurrentLocaleLangCode();
 
 			if (!passwordStr || !emailStr || !passwordHash) {
-				useToast("发送登录验证码失败，用户名和密码不能为空！", "error", 5000); // TODO: 使用多语言
+				useToast("发送登录验证码失败，邮箱和密码不能为空！", "error", 5000); // TODO: 使用多语言
 				return false;
 			}
 
@@ -138,7 +138,13 @@
 			const passwordStr = password.value;
 			const emailStr = email.value;
 			if (!passwordStr || !emailStr) {
-				useToast("用户名和密码不能为空！", "error", 5000); // TODO: 使用多语言
+				useToast("邮箱和密码不能为空！", "error", 5000); // TODO: 使用多语言
+				isChecking2FA.value = false;
+				return;
+			}
+
+			if (isInvalidEmail.value) {
+				useToast("邮箱格式不正确！", "error", 5000); // TODO: 使用多语言
 				isChecking2FA.value = false;
 				return;
 			}
@@ -148,8 +154,8 @@
 			};
 			const check2FAByEmailResult = await api.user.checkUserHave2FAByEmail(checkUserHave2FARequest);
 
-			if (!check2FAByEmailResult.success) {
-				useToast("检查用户 2FA 失败！", "error", 5000); // TODO: 使用多语言
+			if (!check2FAByEmailResult.success) { // 查询用户是否开启 2FA 失败，通常是因为用户不存在
+				useToast("用户信息校验失败！", "error", 5000); // TODO: 使用多语言
 				isChecking2FA.value = false;
 				return;
 			}
@@ -207,7 +213,7 @@
 				useToast(t.toast.login_failed, "error");
 			}
 		} else
-			useToast("用户名和密码不能为空", "error"); // TODO: 使用多语言
+			useToast("邮箱和密码不能为空", "error"); // TODO: 使用多语言
 		isTryingLogin.value = false;
 	}
 
@@ -277,7 +283,7 @@
 				useToast("注册失败", "error"); // TODO: 使用多语言
 			}
 		} else
-			useToast("请输入用户名和密码", "error"); // TODO: 使用多语言
+			useToast("请输入邮箱和密码", "error"); // TODO: 使用多语言
 		isCheckingEmail.value = false;
 	}
 
