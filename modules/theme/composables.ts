@@ -71,7 +71,7 @@ export async function cookieBaker() {
  * @param userSettings 用户设置
  */
 export function saveUserSetting2BrowserCookieStore(userSettings: GetUserSettingsResponseDto) {
-	if (environment.client) {
+	if (process.client) {
 		const currentThemeType = userSettings?.userSettings?.themeType || THEME_ENV.SYSTEM_THEME;
 		const themeColor = userSettings?.userSettings?.themeColor ? (PALETTE_LIST as unknown as string[]).includes(userSettings.userSettings.themeColor) ? userSettings.userSettings.themeColor : THEME_ENV.CUSTOM_THEME_COLOR : THEME_ENV.DEFAULT_THEME_COLOR;
 		const themeColorCustom = userSettings?.userSettings?.themeColorCustom || "";
@@ -140,7 +140,7 @@ export function useKiraCookie<T>(
 		}
 		if (isWatchCookieRef || isListenLoginEvent)
 			watch(cookie, cookieValue => { // 当设置值发送改变时，发送后端请求，并触发 cookieBinding 更新页面样式
-				if (environment.client) {
+				if (process.client) {
 					localStorage.setItem(cookieKey, `${cookieValue}`); // WARN: 使用 useStorage 函数更新数据会导致 cookieBinding 中获取到的 localStorage 数据不是最新数据，可能是 vue 响应式延迟，所以此处使用原始的 localStorage 对象
 					if (isAllowSyncThemeSettings.value) // 如果允许同步样式设置，则发送后端请求，非阻塞
 						correctCallback(cookieValue);

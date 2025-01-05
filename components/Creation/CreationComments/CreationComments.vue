@@ -46,7 +46,7 @@
 		}
 	}
 
-	if (environment.client)
+	if (process.client)
 		await fetchVideoCommentData();
 
 	watch(currentPage, fetchVideoCommentData);
