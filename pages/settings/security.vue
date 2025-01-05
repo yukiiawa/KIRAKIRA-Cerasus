@@ -377,13 +377,15 @@
 			};
 			const headerCookie = useRequestHeaders(["cookie"]);
 			const deleteTotpByVerificationCodeResult = await api.user.deleteTotpByVerificationCode(deleteTotpAuthenticatorByTotpVerificationCodeRequest, headerCookie);
+
 			if (deleteTotpByVerificationCodeResult.isCoolingDown)
 				useToast("无法删除，验证码冷却中。", "warning"); // TODO: 使用多语言
 
 			if (deleteTotpByVerificationCodeResult.success) {
 				closeDeleteTotpModel();
 				await checkUserHave2FAByUUID();
-			}
+			} else
+				useToast("删除 TOTP 身份验证器失败，请稍后再试", "error", 5000); // TODO: 使用多语言
 
 			isDeletingTotp.value = false;
 		} catch (error) {
