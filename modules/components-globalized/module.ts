@@ -2,7 +2,6 @@ import { createResolver, defineNuxtModule } from "@nuxt/kit";
 import { lstat, readFile, readdir, writeFile } from "fs/promises";
 import { throttle } from "lodash-es";
 import { parse, basename } from "path";
-import { environment } from "../../utils/environment";
 
 type WatchEvent = "update" | "remove";
 type Initial = (event?: WatchEvent, path?: string[]) => Promise<void>;
@@ -10,7 +9,7 @@ const fileRoot = (filename: string) => parse(filename).name;
 
 export default defineNuxtModule({
 	setup(_options, nuxt) {
-		if (environment.production) return;
+		if (process.env.NODE_ENV === "production") return;
 		const { resolve: localResolve } = createResolver(import.meta.url);
 		const { resolve } = createResolver(localResolve("../../.nuxt"));
 

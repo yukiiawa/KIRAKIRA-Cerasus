@@ -32,8 +32,13 @@ export const COOKIE_KEY = {
 };
 
 let lastClickMouseEvent: MouseEvent | undefined;
-if (process.client)
-	document.addEventListener("click", e => lastClickMouseEvent = e, true);
+try {
+	if (typeof document !== "undefined")
+		document?.addEventListener("click", e => lastClickMouseEvent = e, true);
+} catch (error) {
+	console.error("ERROR", "Client-side code (adding global event listeners) should not be run on the server. (Error catched in modules/theme/theme-cookie-binding.ts)");
+	console.error("ERROR", error);
+}
 
 /**
  * 在 DOM 加载之前执行的脚本。
