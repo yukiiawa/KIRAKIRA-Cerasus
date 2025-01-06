@@ -481,20 +481,23 @@
 					<!-- TODO: 使用多语言 -->
 					请勿向他人展示本页中显示的内容！
 				</InfoBar>
-				<div v-if="!backupCode || backupCode.length <= 0 || !recoveryCode" class="page1">
-					<div class="step1">
-						<h3>1. 安装验证器程序</h3>
+				<div v-if="!backupCode || backupCode.length <= 0 || !recoveryCode" class="page">
+					<div class="step">
+						<ShadingIcon icon="download" />
+						<h3><Icon name="counter_1" />安装验证器程序</h3>
 						<p>如果你已安装验证器程序，请跳过本步骤。</p>
-						<p>如果没有，你需要在你的私人设备中安装一个支持 TOTP 算法的验证器程序，例如 <a href="https://www.microsoft.com/security/mobile-authenticator-app" target="_blank">Microsoft Authenticator</a> 或 <a href="https://support.google.com/accounts/answer/1066447" target="_blank"> Google Authenticator</a>.</p>
+						<p>如果没有，你需要在你的私人设备中安装一个支持 TOTP 算法的验证器程序，例如 <a href="https://ente.io/auth/" target="_blank">Ente Auth</a>、<a href="https://www.microsoft.com/security/mobile-authenticator-app" target="_blank">Microsoft Authenticator</a> 或 <a href="https://support.google.com/accounts/answer/1066447" target="_blank">Google Authenticator</a>.</p>
 					</div>
-					<div class="step2">
-						<h3>2. 使用验证器程序扫描下方二维码</h3>
+					<div class="step">
+						<ShadingIcon icon="qr_code_scanner" />
+						<h3><Icon name="counter_2" />使用验证器程序扫描下方二维码</h3>
 						<div class="totp-qrcode-box">
 							<QrcodeVue v-if="otpAuth" :value="otpAuth" :level="totpQrcodeLevel" :renderAs="totpQrcodeRenderAs" :size="totpQrcodeSize" />
 						</div>
 					</div>
-					<div class="step3">
-						<h3>3. 填写验证码</h3>
+					<div class="step">
+						<ShadingIcon icon="edit" />
+						<h3><Icon name="counter_3" />填写验证码</h3>
 						<p>扫描二维码后，你的验证器程序中应该会出现一个新的验证码。<a href="https://github.com/KIRAKIRA-DOUGA/KIRAKIRA-Cerasus/issues" target="_blank">遇到问题？</a></p>
 						<p>请将验证码填写至下方的输入框中，并在倒计时结束前点击“确认绑定”按钮。</p>
 						<form class="totp-confirm-form">
@@ -508,9 +511,10 @@
 						</form>
 					</div>
 				</div>
-				<div v-else class="page2">
-					<div class="step4">
-						<h3>4. 保存备份码和恢复码</h3>
+				<div v-else class="page">
+					<div class="step">
+						<ShadingIcon icon="lock_reset" />
+						<h3><Icon name="counter_4" />保存备份码和恢复码</h3>
 						<p>备份码可以作为 TOTP 验证码的替代。恢复码不仅可以作为 TOTP 验证码的替代，在使用恢复码登陆后，还会自动解除 TOTP 2FA 绑定。</p>
 						<p>每个备份码和恢复码仅能使用一次，且关闭本页面后将不再显示，请妥善保存。</p>
 						<br />
@@ -618,7 +622,7 @@
 	.create-totp-modal {
 		display: flex;
 		flex-direction: column;
-		gap: 24px;
+		gap: 8px;
 		width: 80dvw;
 		max-width: 550px;
 
@@ -632,40 +636,75 @@
 			--size: large;
 		}
 
-		.page1,
-		.page2 {
+		.page {
 			display: flex;
 			flex-direction: column;
-			gap: 24px;
+			gap: 8px;
 
 			.totp-qrcode-box {
+				@include round-small;
+				@include chip-shadow;
 				display: inline-flex;
-				width: auto;
-				padding: 10px 0;
-				margin-left: 10px;
+				justify-content: center;
+				align-items: center;
+				width: 150px;
+				height: 150px;
+				padding: 8px;
 				background-color: white;
-				flex-direction: column;
-				height: 200px;
+
+				> svg {
+					@include square(100%);
+				}
 			}
 
 			.totp-confirm-form {
-				padding-top: 5px;
+				margin-top: 8px;
 			}
 
-			.step4 {
-				pre {
-					margin-top: 5px;
-					padding: 10px;
-					background-color: #f4f4f4;
-					border: 1px solid #ddd;
-					border-radius: 6px;
-					cursor: text;
+			.step {
+				@include chip-shadow;
+				@include round-large;
+				position: relative;
+				padding: 16px;
+				overflow: clip;
+				background-color: c(surface-color);
 
-					code {
-						display: block;
-						width: 100%;
-						user-select: text;
-					}
+				.shading-icon {
+					position: absolute;
+					z-index: unset;
+				}
+
+				> *:not(h3) {
+					margin-left: 32px;
+				}
+			}
+
+			h3 {
+				display: flex;
+				gap: 8px;
+				align-items: center;
+				margin-bottom: 6px;
+
+				.icon {
+					color: c(accent);
+					font-size: 24px;
+				}
+			}
+
+			pre {
+				@include round-small;
+				display: flex;
+				align-items: center;
+				height: 36px;
+				margin-top: 4px;
+				padding: 0 12px;
+				background-color: c(gray-10);
+				cursor: text;
+
+				code {
+					display: block;
+					width: 100%;
+					user-select: text;
 				}
 			}
 		}
