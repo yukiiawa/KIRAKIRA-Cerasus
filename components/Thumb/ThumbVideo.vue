@@ -40,42 +40,44 @@
 
 <template>
 	<LocaleLink class="thumb-video lite" :to="link" :blank>
-		<div class="card">
-			<div class="cover-wrapper">
-				<NuxtImg
-					v-if="image"
-					:provider="environment.cloudflareImageProvider"
-					:src="image"
-					alt="cover"
-					class="cover"
-					:draggable="false"
-					format="avif"
-					width="320"
-					height="180"
-					:placeholder="[50, 50, 100, 5]"
-				/>
-			</div>
-			<div class="text-wrapper">
-				<div class="title"><slot>视频标题</slot></div>
-				<div class="info">
-					<div class="line">
-						<div class="item">
-							<Icon name="play" />
-							<p>{{ watchedCount }}</p>
+		<div class="card-wrapper">
+			<div v-ripple class="card">
+				<div class="cover-wrapper">
+					<NuxtImg
+						v-if="image"
+						:provider="environment.cloudflareImageProvider"
+						:src="image"
+						alt="cover"
+						class="cover"
+						:draggable="false"
+						format="avif"
+						width="320"
+						height="180"
+						:placeholder="[50, 50, 100, 5]"
+					/>
+				</div>
+				<div class="text-wrapper">
+					<div class="title"><slot>视频标题</slot></div>
+					<div class="info">
+						<div class="line">
+							<LocaleLink class="item uploader" :to="`/user/${uploaderId ?? ''}`" linkInLink :blank>
+								<Icon name="person" />
+								<div>{{ uploader }}</div>
+							</LocaleLink>
 						</div>
-						<div class="item">
-							<Icon name="duration" />
-							<p>{{ duration }}</p>
-						</div>
-					</div>
-					<div class="line">
-						<LocaleLink class="item uploader" :to="`/user/${uploaderId ?? ''}`" linkInLink :blank>
-							<Icon name="person" />
-							<div>{{ uploader }}</div>
-						</LocaleLink>
-						<div class="item">
-							<Icon name="calendar" />
-							<div><DateTime :dateTime="date ?? null" /></div>
+						<div class="line">
+							<div class="item">
+								<Icon name="play" />
+								<p>{{ watchedCount }}</p>
+							</div>
+							<div class="item">
+								<Icon name="duration" />
+								<p>{{ duration }}</p>
+							</div>
+							<div class="item">
+								<Icon name="calendar" />
+								<div><DateTime :dateTime="date ?? null" /></div>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -92,13 +94,23 @@
 		min-width: 0;
 		color: c(text-color);
 
+		&:not(:has(.uploader:any-hover)):any-hover {
+			.title {
+				color: c(accent);
+			}
+		}
+
 		&:any-hover:not(:active) {
 			z-index: 1;
 
-			.card {
+			.card-wrapper {
+				@include round-large;
 				@include system-card;
-				background-color: c(surface-color);
 				translate: 0 -6px;
+			}
+
+			.card {
+				background-color: c(surface-color);
 				backdrop-filter: none;
 			}
 		}
@@ -181,7 +193,7 @@
 	.info {
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
+		gap: 8px;
 		justify-content: space-between;
 		margin: 6px 0 0 -2px;
 		color: c(icon-color);
@@ -195,8 +207,8 @@
 
 		.line {
 			display: flex;
-			gap: 8px;
-			justify-content: space-between;
+			flex-wrap: wrap;
+			gap: 8px 12px;
 
 			.list & {
 				gap: 14px;
@@ -216,8 +228,13 @@
 
 		.uploader {
 			justify-content: flex-start;
-			color: inherit;
+			color: c(icon-color);
 			text-decoration: none;
+
+			&:any-hover {
+				color: c(accent);
+				opacity: 1;
+			}
 
 			> div {
 				overflow: clip;

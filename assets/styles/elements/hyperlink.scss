@@ -9,7 +9,7 @@ a:any-link {
 :not(.lite-links) > a:not(.lite) {
 	text-decoration: underline;
 
-	&:hover,
+	&:any-hover,
 	&:focus,
 	&:active {
 		opacity: 0.7;
