@@ -80,6 +80,7 @@
 <template>
 	<DefineAvatar>
 		<UserAvatar
+			v-if="selfUserInfoStore.isEffectiveCheckOnce"
 			v-tooltip="selfUserInfoStore.isLogined ? selfUserInfoStore.userNickname : t.login"
 			:avatar="selfUserInfoStore.isLogined && !selfUserInfoStore.tempHideAvatarFromSidebar ? selfUserInfoStore.userAvatar : undefined"
 			hoverable

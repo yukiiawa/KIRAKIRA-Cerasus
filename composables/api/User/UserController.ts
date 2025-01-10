@@ -93,9 +93,10 @@ export const getSelfUserInfo = async (getSelfUserInfoRequest?: GetSelfUserInfoRe
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
 	const selfUserInfo = await POST(`${USER_API_URI}/self`, getSelfUserInfoRequest, { credentials: "include" }) as GetSelfUserInfoResponseDto;
 	const selfUserInfoResult = selfUserInfo.result;
+	const selfUserInfoStore = useSelfUserInfoStore();
 	if (selfUserInfo.success && selfUserInfoResult) {
 		const appSettings = useAppSettingsStore();
-		const selfUserInfoStore = useSelfUserInfoStore();
+		selfUserInfoStore.isEffectiveCheckOnce = true; // 成功 fetch 用户信息时才能设为 true
 		appSettings.typeOf2FA = selfUserInfoResult.typeOf2FA || "none";
 		selfUserInfoStore.isLogined = true;
 		selfUserInfoStore.uid = selfUserInfoResult.uid;
@@ -128,7 +129,12 @@ export const getUserInfo = async (getUserInfoByUidRequest: GetUserInfoByUidReque
  */
 export const checkUserToken = async (): Promise<CheckUserTokenResponseDto> => {
 	// TODO: use { credentials: "include" } to allow save/read cookies from cross-origin domains. Maybe we should remove it before deployment to production env.
-	return await GET(`${USER_API_URI}/check`, { credentials: "include" }) as CheckUserTokenResponseDto;
+	const result = await GET(`${USER_API_URI}/check`, { credentials: "include" }) as CheckUserTokenResponseDto;
+	if (environment.client && result && (!result.success || !result.userTokenOk)) {
+		const selfUserInfoStore = useSelfUserInfoStore();
+		selfUserInfoStore.isEffectiveCheckOnce = true;
+	}
+	return result;
 };
 
 /**

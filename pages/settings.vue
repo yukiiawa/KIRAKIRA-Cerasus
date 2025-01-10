@@ -89,9 +89,6 @@
 		],
 	};
 
-	if (!selfUserInfoStore.isLogined && settings.personal.some(setting => setting.id === currentSettingsRequested.value))
-		navigate("/settings/appearance");
-
 	/**
 	 * 登出。
 	 */
@@ -107,6 +104,11 @@
 	}
 
 	useHead({ title: htmlTitle });
+
+	watch(() => selfUserInfoStore.isEffectiveCheckOnce, () => {
+		if (environment.client && !selfUserInfoStore.isLogined && settings.personal.some(setting => setting.id === currentSettingsRequested.value))
+			navigate("/settings/appearance");
+	});
 </script>
 
 <template>
