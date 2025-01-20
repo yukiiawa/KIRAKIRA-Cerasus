@@ -93,6 +93,7 @@ export default {
 	account: "账号",
 	profile: {
 		_: "资料",
+		edit: "编辑资料",
 		edit_banner: "点击更换封面",
 		edit_avatar: "点击更换头像",
 	},
@@ -161,6 +162,18 @@ export default {
 		},
 		error: {
 			getDanmaku: "获取弹幕列表失败",
+			loadMedia: "加载媒体失败",
+		},
+		playlist: {
+			add_to_playlist: "添加到播放列表",
+			remove_from_playlist: "从播放列表中移除",
+		},
+		playback_order: {
+			_: "播放顺序",
+			sequential: "顺序播放",
+			repeat_all: "列表循环",
+			repeat_one: "单个循环",
+			shuffle: "随机播放",
 		},
 	},
 	danmaku: {
@@ -295,6 +308,7 @@ export default {
 		failed: "复制失败！",
 	},
 	pin: "置顶",
+	pinned: "已置顶",
 	unpin: "取消置顶",
 	report: "投诉",
 	original: "原创",

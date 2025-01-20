@@ -48,7 +48,20 @@
 	if (model.value > props.max)
 		throw new RangeError("Slider 的值比最大值要大。" + errorInfo);
 
-	const restrict = (n: number | undefined, nanValue: number) => Number.isFinite(n) ? clamp(map(n!, props.min, props.max, 0, 1), 0, 1) : nanValue;
+	const restrict = (n: number | undefined, nanValue: number): number => {
+		if (
+			typeof props.min !== "number" ||
+			typeof props.max !== "number" ||
+			!Number.isFinite(props.min) ||
+			!Number.isFinite(props.max)
+		)
+			return nanValue;
+
+		return typeof n === "number" && Number.isFinite(n)
+			? clamp(map(n, props.min, props.max, 0, 1), 0, 1)
+			: nanValue;
+	};
+
 	const value = computed(() => restrict(model.value, 0));
 	const smoothValue = useSmoothValue(value, 0.5); // 修改这个参数可以调整滑动条的平滑移动值。
 	const thumbEl = ref<HTMLDivElement>(), trackEl = ref<HTMLDivElement>();
@@ -99,7 +112,7 @@
 			const value = map(position, 0, max - thumbSize, props.min, props.max);
 			const steppedValue = roundToStep(value, props.step);
 			model.value = steppedValue;
-			pendingValue.value = steppedValue;
+			pendingValue.value = map(steppedValue, props.min, props.max, 0, 1);
 			emits("changing", value);
 		});
 		const pointerUp = (e: PointerEvent) => {
@@ -146,8 +159,8 @@
 		if (isInPath(e, thumbEl)) return;
 		if (showPendingState.value === "")
 			showPendingState.value = "hovering";
-		// if (showPendingState.value === "hovering")
-		// 	pendingValue.value = props.pending === "cursor" ? getPointerOnTrackValue(e) : value.value;
+		if (showPendingState.value === "hovering")
+			pendingValue.value = props.pending === "cursor" ? map(getPointerOnTrackValue(e), props.min, props.max, 0, 1) : value.value;
 	}
 
 	/**
@@ -180,7 +193,7 @@
 
 	const displayValue = computed(() =>
 		(typeof props.displayValue === "function" ? props.displayValue(pendingValue.value) : props.displayValue)
-		?? pendingValue.value);
+		?? map(pendingValue.value, 0, 1, props.min, props.max));
 </script>
 
 <template>
@@ -211,8 +224,8 @@
 					class="buffered"
 					:key="index"
 					:style="{
-						left: `calc((100% - var(--thumb-size)) * ${start} + var(--thumb-size))`,
-						width: `calc((100% - var(--thumb-size)) * ${end - start})`,
+						left: start <= 0.001 ? '0' : `calc((100% - var(--thumb-size)) * ${start} + var(--thumb-size))`,
+						width: start <= 0.001 ? `calc((100% - var(--thumb-size)) * ${end - start} + var(--thumb-size))` : `calc((100% - var(--thumb-size)) * ${end - start})`,
 					}"
 				></div>
 			</div>

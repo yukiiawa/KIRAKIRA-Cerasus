@@ -168,7 +168,7 @@ export default [
 				enforceForJSX: true,
 			}],
 			"@stylistic/max-statements-per-line": "off",
-			"no-useless-assignment": "error",
+			// "no-useless-assignment": "error",
 			"no-control-regex": "off",
 			"import/order": "off", // 与 VSCode 内置导入排序特性打架。
 			"import/first": "off", // 与 Vue 特性冲突。

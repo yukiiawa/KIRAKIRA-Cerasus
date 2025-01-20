@@ -6,6 +6,7 @@
 	}>();
 
 	const BASE_THUMBNAIL_URL = "static/images/thumbnail.png"; // FIXME: Nuxt Image 的 src 为 undefined 或 "" 时会出错，见 https://github.com/nuxt/image/issues/1299
+	const BASE_THUMBNAIL_ID = environment.cloudflareImageProvider === "cloudflare-prod" ? "f907a7bd-3247-4415-1f5e-a67a5d3ea100" : "ea693cd1-5e58-4e07-1391-49c133e30300";
 
 	const copyright = ref<Copyright>("original"); // 视频版权
 	const title = ref(""); // 视频标题
@@ -28,7 +29,7 @@
 	const isUploadingCover = ref<boolean>(false); // 是否正在上传封面图
 	const cropper = ref(); // 图片裁剪器对象
 	const isNetworkImage = computed(() => thumbnailUrl.value !== BASE_THUMBNAIL_URL); // 封面图是静态资源图片还是网图，即用户是否已经完成封面图上传
-	const provider = computed(() => isNetworkImage.value ? "kirakira" : undefined); // 根据 isNetworkImage 的值判断是否使用 kirakira 作为 Nuxt Image 提供商
+	const provider = computed(() => isNetworkImage.value ? environment.cloudflareImageProvider : undefined); // 根据 isNetworkImage 的值判断是否使用 cloudflare 作为 Nuxt Image 提供商
 	// 视频分类
 	const VIDEO_CATEGORY = new Map([
 		["anime", t.category.anime],
@@ -196,7 +197,7 @@
 				},
 			],
 			title: title.value,
-			image: isNetworkImage.value ? thumbnailUrl.value : "f907a7bd-3247-4415-1f5e-a67a5d3ea100", // 没上传封面时使用默认封面图 // TODO: 自动获取视频截图作为封面
+			image: isNetworkImage.value ? thumbnailUrl.value : BASE_THUMBNAIL_ID, // 没上传封面时使用默认封面图 ID // TODO: 自动获取视频截图作为封面
 			uploaderId: uid,
 			duration: 300, // TODO: 视频时长
 			description: description.value,

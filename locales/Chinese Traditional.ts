@@ -162,6 +162,8 @@ export default {
 		error: {
 			getDanmaku: "獲取彈幕列表失敗",
 		},
+		playlist: {},
+		playback_order: {},
 	},
 	danmaku: {
 		_: "彈幕",
@@ -466,7 +468,7 @@ export default {
 		cancel_upload: "確定要取消本次上傳嗎？",
 	},
 	current_time: "現在時間",
-	set_as_default: "設為默認",
+	set_as_default: "設定為預設值",
 	advanced_search: "進階搜尋",
 	total: "總計",
 	used: "已使用",
@@ -477,4 +479,5 @@ export default {
 		_: "邀請碼",
 		invalid: "無效的邀請碼",
 	},
+	version: "版本",
 } as const satisfies LocaleIdentifiers;

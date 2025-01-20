@@ -37,6 +37,8 @@ export default {
 		control_bar: {},
 		filter: {},
 		error: {},
+		playlist: {},
+		playback_order: {},
 	},
 	danmaku: {
 		format: {

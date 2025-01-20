@@ -93,6 +93,7 @@ export default {
 	account: "Tài khoản",
 	profile: {
 		_: "Hồ sơ",
+		edit: "Sửa hồ sơ",
 		edit_banner: "Thay đổi ảnh bìa",
 		edit_avatar: "Thay đổi ảnh đại diện",
 	},
@@ -162,6 +163,8 @@ export default {
 		error: {
 			getDanmaku: "Nhận danh sách Danmaku thất bại",
 		},
+		playlist: {},
+		playback_order: {},
 	},
 	danmaku: {
 		_: "Danmaku",
@@ -286,7 +289,7 @@ export default {
 	},
 	associate_existing: "Chia phần video",
 	reply: "Phản hồi",
-	mention: "Lượt nhắc",
+	mention: "Đề cập",
 	more: "Xem thêm",
 	delete: "Xóa",
 	copy: {
@@ -295,6 +298,7 @@ export default {
 		failed: "Sao chép thất bại!",
 	},
 	pin: "Ghim",
+	pinned: "Đã ghim",
 	unpin: "Bỏ ghim",
 	report: "Báo cáo",
 	original: "Nguyên tác",
@@ -477,4 +481,5 @@ export default {
 		_: "Mã mời",
 		invalid: "Mã mời không hợp lệ",
 	},
+	version: "Phiên bản",
 } as const satisfies LocaleIdentifiers;

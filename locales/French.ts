@@ -162,6 +162,8 @@ export default {
 		error: {
 			getDanmaku: "Impossible d'obtenir la liste de danmaku",
 		},
+		playlist: {},
+		playback_order: {},
 	},
 	danmaku: {
 		_: "Danmaku | Danmakus",

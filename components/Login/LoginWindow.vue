@@ -1,3 +1,7 @@
+<docs>
+	TODO 建议重构该组件中的动画。
+</docs>
+
 <script setup lang="ts">
 	import makeUsername from "pomsky/username.pom";
 	const props = defineProps<{
@@ -8,14 +12,16 @@
 	const { avatarSize, avatarGap, avatarMinLeft } = useScssVariables().numbers;
 	const selfUserInfoStore = useSelfUserInfoStore();
 	const model = defineModel<boolean>();
-	type PageType = "login" | "register1" | "register2" | "register3" | "forgot" | "reset";
-	const currentPage = ref<PageType>("login");
+	type PageType = "login1" | "login2-2fa" | "login2-email" | "register1" | "register2" | "register3" | "forgot" | "reset";
+	const currentPage = ref<PageType>("login1");
 	const isWelcome = computed(() => ["register1", "register2", "register3"].includes(currentPage.value));
-	const coverMoveLeft = computed(() => currentPage.value !== "login");
+	const coverMoveLeft = computed(() => !["login1", "login2-2fa", "login2-email"].includes(currentPage.value));
 	const email = ref("");
 	const password = ref("");
-	const confirmPassword = ref("");
-	const verificationCode = ref("");
+	const clientOtp = ref(""); // TOTP 2FA 登录时的一次性密码
+	const loginVerificationCode = ref(""); // Email 2FA 登录时的验证码
+	const confirmPassword = ref(""); // 二次确认的密码
+	const registrationVerificationCode = ref(""); // 注册时的验证码
 	const passwordHint = ref("");
 	const loginAnimationText = ref<HTMLDivElement>();
 	const avatarMovement = ref(0);
@@ -30,7 +36,8 @@
 			if (value) closeLater();
 		},
 	});
-	const isTryingLogin = ref(false);
+	const isChecking2FA = ref(false); // 正在检查用户是否开启 2FA
+	const isTryingLogin = ref(false); // 正在尝试登录
 	const isTryingRegistration = ref(false);
 	const isCheckingEmail = ref(false);
 	const invitationCode = ref("");
@@ -51,6 +58,7 @@
 			if (isLogining.value) selfUserInfoStore.isLogined = true;
 			if (!value) selfUserInfoStore.tempHideAvatarFromSidebar = false;
 			isLogining.value = false;
+			currentPage.value = "login1";
 		},
 	});
 	const loginWindow = refComp();
@@ -60,6 +68,8 @@
 	const validChar = makeUsername();
 	const username = ref("");
 	const nickname = ref("");
+
+	const timeout = useSendVerificationCodeTimeout(); // 全局的验证码倒计时
 
 	/**
 	 * 更新登录动画中头像向左滑动的距离。
@@ -76,12 +86,109 @@
 	}
 
 	/**
-	 * 登录账户。
+	 * 发送登录验证码
+	 * @returns 是否成功发送登录验证码
+	 */
+	async function sentLoginVerificationCode(): Promise<boolean> {
+		try {
+			const passwordStr = password.value;
+			const passwordHash = await generateHash(password.value);
+			const emailStr = email.value;
+			const locale = getCurrentLocaleLangCode();
+
+			if (!passwordStr || !emailStr || !passwordHash) {
+				useToast("发送登录验证码失败，邮箱和密码不能为空！", "error", 5000); // TODO: 使用多语言
+				return false;
+			}
+
+			const sendUserEmailAuthenticatorVerificationCodeRequest: SendUserEmailAuthenticatorVerificationCodeRequestDto = {
+				passwordHash,
+				email: emailStr,
+				clientLanguage: locale,
+			};
+			const sendUserEmailAuthenticatorVerificationCodeResult = await api.user.sendUserEmailAuthenticatorVerificationCode(sendUserEmailAuthenticatorVerificationCodeRequest);
+			timeout.startTimeout(); // 开始倒计时
+
+			if (!sendUserEmailAuthenticatorVerificationCodeResult.success) {
+				useToast("发送登录验证码失败，发送失败，请稍后再试！", "error", 5000); // TODO: 使用多语言
+				currentPage.value = "login1";
+				return false;
+			}
+
+			if (sendUserEmailAuthenticatorVerificationCodeResult.isCoolingDown) {
+				useToast("发送登录验证码失败，正在冷却中！", "warning", 5000); // TODO: 使用多语言
+				currentPage.value = "login1";
+				return false;
+			}
+
+			return true;
+		} catch (error) {
+			useToast("发送登录验证码失败，请刷新页面", "error", 5000); // TODO: 使用多语言
+			currentPage.value = "login1";
+			return false;
+		}
+	}
+
+	/**
+	 * 登录账户，其一。
+	 */
+	async function check2FA() {
+		isChecking2FA.value = true;
+		try {
+			const passwordStr = password.value;
+			const emailStr = email.value;
+			if (!passwordStr || !emailStr) {
+				useToast("邮箱和密码不能为空！", "error", 5000); // TODO: 使用多语言
+				isChecking2FA.value = false;
+				return;
+			}
+
+			if (isInvalidEmail.value) {
+				useToast("邮箱格式不正确！", "error", 5000); // TODO: 使用多语言
+				isChecking2FA.value = false;
+				return;
+			}
+
+			const checkUserHave2FARequest: CheckUserHave2FARequestDto = {
+				email: emailStr,
+			};
+			const check2FAByEmailResult = await api.user.checkUserHave2FAByEmail(checkUserHave2FARequest);
+
+			if (!check2FAByEmailResult.success) { // 查询用户是否开启 2FA 失败，通常是因为用户不存在
+				useToast("用户信息校验失败！", "error", 5000); // TODO: 使用多语言
+				isChecking2FA.value = false;
+				return;
+			}
+
+			// 如果有 2FA，则跳转到对应的 2FA 登录页面，如果没有 2FA 则直接登录
+			if (check2FAByEmailResult.have2FA)
+				if (check2FAByEmailResult.type === "email") {
+					const sendResult = await sentLoginVerificationCode();
+					if (sendResult) // 如果成功发送则进入下一页，否则在原地等待。
+						currentPage.value = "login2-email";
+				} else
+					currentPage.value = "login2-2fa";
+				
+			else
+				await loginUser();
+		} catch (error) {
+			useToast(t.toast.login_failed, "error");
+		}
+		isChecking2FA.value = false;
+	}
+
+	/**
+	 * 登录账户，其二。
 	 */
 	async function loginUser() {
 		if (password.value && email.value) {
 			const passwordHash = await generateHash(password.value);
-			const userLoginRequest: UserLoginRequestDto = { email: email.value, passwordHash };
+			const userLoginRequest: UserLoginRequestDto = {
+				email: email.value,
+				passwordHash,
+				clientOtp: clientOtp.value,
+				verificationCode: loginVerificationCode.value,
+			};
 			try {
 				isTryingLogin.value = true;
 				const loginResponse = await api.user.login(userLoginRequest);
@@ -89,7 +196,6 @@
 
 				if (loginResponse.success && loginResponse.uid && loginResponse.token) {
 					selfUserInfoStore.tempHideAvatarFromSidebar = true;
-					selfUserInfoStore.isLogined = true;
 
 					// 登录后，将用户设置存储到 cookie，然后调用 cookieBinding 从 cookie 中获取样式设置并追加到 dom 根节点
 					const userSettings = await api.user.getUserSettings();
@@ -107,7 +213,7 @@
 				useToast(t.toast.login_failed, "error");
 			}
 		} else
-			useToast("用户名和密码不能为空", "error"); // TODO: 使用多语言
+			useToast("邮箱和密码不能为空", "error"); // TODO: 使用多语言
 		isTryingLogin.value = false;
 	}
 
@@ -177,7 +283,7 @@
 				useToast("注册失败", "error"); // TODO: 使用多语言
 			}
 		} else
-			useToast("请输入用户名和密码", "error"); // TODO: 使用多语言
+			useToast("请输入邮箱和密码", "error"); // TODO: 使用多语言
 		isCheckingEmail.value = false;
 	}
 
@@ -185,8 +291,8 @@
 	 * 用户注册，其三。
 	 */
 	async function registerUser() {
-		if (!verificationCode.value) {
-			useToast("验证码不能为空", "error"); // TODO: 使用多语言
+		if (!registrationVerificationCode.value) {
+			useToast("注册验证码不能为空", "error"); // TODO: 使用多语言
 			return;
 		}
 		if (password.value !== confirmPassword.value) {
@@ -201,7 +307,7 @@
 			email: email.value,
 			passwordHash,
 			passwordHint: passwordHint.value,
-			verificationCode: verificationCode.value,
+			verificationCode: registrationVerificationCode.value,
 			invitationCode: invitationCode.value,
 			username: username.value,
 			userNickname: nickname.value,
@@ -213,7 +319,7 @@
 				await api.user.getSelfUserInfo(); // 根据获取到的用户 UID 和 Token 获取用户数据，相当于自动登录
 				isTryingRegistration.value = false; // 停止注册按钮加载动画
 				open.value = false; // 关闭登录页
-				currentPage.value = "login"; // 将登录页设为登录窗口默认页
+				currentPage.value = "login1"; // 将登录页设为登录窗口默认页
 			} else
 				useToast("注册失败，请稍后再试", "error"); // TODO: 使用多语言
 		} catch (error) {
@@ -286,7 +392,7 @@
 
 				<div class="main left">
 					<!-- 登录 Login -->
-					<div class="login">
+					<div class="login1">
 						<HeadingGroup :name="t.login" englishName="Login" />
 						<form class="form">
 							<TextBox
@@ -296,7 +402,7 @@
 								icon="email"
 								:invalid="isInvalidEmail"
 								autoComplete="username"
-								@keyup.enter="loginUser"
+								@keyup.enter="check2FA"
 							/>
 							<TextBox
 								v-model="password"
@@ -304,6 +410,39 @@
 								:placeholder="t.password"
 								icon="lock"
 								autoComplete="current-password"
+								@keyup.enter="check2FA"
+							/>
+							<div class="button login-button-placeholder">
+								<Button
+									class="button login-button button-block"
+									:loading="isChecking2FA"
+									:disabled="isChecking2FA || selfUserInfoStore.isLogined || !timeout.isTimeouted"
+									@click="check2FA"
+								>
+									{{ timeout.isTimeouted ? "Link Start!" : `Link Start! (${timeout.timeout})` }}
+								</Button>
+							</div>
+						</form>
+						<div class="action margin-left-inset margin-right-inset">
+							<Button @click="currentPage = 'forgot'">{{ t.loginwindow.login_to_forgot }}</Button>
+							<Button @click="currentPage = 'register1'">{{ t.loginwindow.login_to_register }}</Button>
+						</div>
+					</div>
+
+					<div class="login2-2fa">
+						<HeadingGroup :name="t.login" englishName="Login" />
+						<span>你开启了 2FA，因此需要提供验证码。<br />若验证设备不可用，请使用备用码或恢复码登录。</span>
+						<span>
+							注意：使用恢复码登陆后，你账号的 2FA 将在登录成功后失效。
+						</span>
+						<form class="form">
+							<TextBox
+								v-model="clientOtp"
+								type="text"
+								placeholder="验证码"
+								icon="lock"
+								:invalid="isInvalidEmail"
+								autoComplete="username"
 								@keyup.enter="loginUser"
 							/>
 							<div class="button login-button-placeholder">
@@ -311,8 +450,30 @@
 							</div>
 						</form>
 						<div class="action margin-left-inset margin-right-inset">
-							<Button @click="currentPage = 'forgot'">{{ t.loginwindow.login_to_forgot }}</Button>
-							<Button @click="currentPage = 'register1'">{{ t.loginwindow.login_to_register }}</Button>
+							<Button @click="currentPage = 'login1'">返回</Button>
+							<Button>需要帮助？</Button>
+						</div>
+					</div>
+					<div class="login2-email">
+						<HeadingGroup :name="t.login" englishName="Login" />
+						<span>你开启了邮箱 2FA，我们已经向你的邮箱发送了一封包含验证码的邮件。<br />若未收到验证码，请检查垃圾邮件。</span>
+						<form class="form">
+							<TextBox
+								v-model="loginVerificationCode"
+								type="text"
+								placeholder="验证码"
+								icon="lock"
+								:invalid="isInvalidEmail"
+								autoComplete="username"
+								@keyup.enter="loginUser"
+							/>
+							<div class="button login-button-placeholder">
+								<Button class="button login-button button-block" :loading="isTryingLogin" :disabled="isTryingLogin || selfUserInfoStore.isLogined" @click="loginUser">Link Start!</Button>
+							</div>
+						</form>
+						<div class="action margin-left-inset margin-right-inset">
+							<Button @click="currentPage = 'login1'">返回</Button>
+							<Button>需要帮助？</Button>
 						</div>
 					</div>
 				</div>
@@ -349,7 +510,7 @@
 							</div>
 						</div>
 						<div class="action margin-left-inset">
-							<Button @click="currentPage = 'login'">{{ t.loginwindow.register_to_login }}</Button>
+							<Button @click="currentPage = 'login1'">{{ t.loginwindow.register_to_login }}</Button>
 							<Button icon="arrow_right" class="button icon-behind" :loading="isCheckingUsername" :disabled="isCheckingUsername" @click="checkUsernameAndJumpNextPage">{{ t.step.next }}</Button>
 						</div>
 					</div>
@@ -403,7 +564,7 @@
 						<HeadingGroup :name="t.register" englishName="Register" class="collapse" />
 						<div class="form">
 							<div><Preserves>{{ t.loginwindow.register_email_sent_info }}</Preserves></div>
-							<SendVerificationCode v-model="verificationCode" :email="email" verificationCodeFor="registration" />
+							<SendVerificationCode v-model="registrationVerificationCode" :email="email" verificationCodeFor="registration" />
 							<TextBox
 								v-model="confirmPassword"
 								type="password"
@@ -433,7 +594,7 @@
 							<Button icon="send" class="button logo-font button-block">{{ t.send }}</Button>
 						</div>
 						<div class="action margin-left-inset">
-							<Button @click="currentPage = 'login'">{{ t.loginwindow.forgot_to_login }}</Button>
+							<Button @click="currentPage = 'login1'">{{ t.loginwindow.forgot_to_login }}</Button>
 						</div>
 					</div>
 
@@ -481,7 +642,7 @@
 						<div class="line"></div>
 					</div>
 					<div class="avatar">
-						<NuxtImg v-if="selfUserInfoStore.userAvatar" provider="kirakira" :src="selfUserInfoStore.userAvatar" alt="avatar" />
+						<NuxtImg v-if="selfUserInfoStore.userAvatar" :provider="environment.cloudflareImageProvider" :src="selfUserInfoStore.userAvatar" alt="avatar" />
 						<Icon v-else name="person" />
 					</div>
 					<div ref="loginAnimationText" class="texts">
@@ -560,7 +721,7 @@
 		}
 	}
 
-	:comp:not(.move-left) .main > * {
+	:comp:not(.move-left) .main.right > * {
 		translate: 0 !important;
 	}
 
@@ -591,13 +752,26 @@
 
 			@if true {
 				// HACK: 为了故意不应用排序规则而将下面这部分页面声明单独提炼在下方。
+				@include page("!.login1", ".login1", left);
+
+				@include page("!.login2-2fa", ".login2-2fa", left);
+				@include page(".login2-2fa", ".login1", left);
+				@include page(".login1", ".login2-2fa", right);
+
+				@include page("!.login2-email", ".login2-email", left);
+				@include page(".login2-email", ".login1", left);
+				@include page(".login1", ".login2-email", right);
+
 				@include page("!.register1", ".register1", right);
 				@include page("!.register2", ".register2", right);
 				@include page("!.register3", ".register3", right);
+
 				@include page("!.forgot", ".forgot", right);
 				@include page("!.reset", ".reset", right);
+
 				@include page(".register2", ".register1", left);
 				@include page(".register3", ".register2", left);
+
 				@include page("!.register1, .register2, .register3", ".register-title", right);
 			}
 		}

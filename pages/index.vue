@@ -36,6 +36,7 @@
 				{{ t.category[cat.toLowerCase()] }}
 			</TabItem>
 		</TabBar>
+		<!-- TODO: 使用多语言 -->
 		<InfoBar title="公告" lite>
 			目前网站仍然处于早期的公测中，由于用户数量增长速度远超预期，站娘已暂停发放邀请码，请不要一直私聊啦！
 			<br />
@@ -70,14 +71,22 @@
 		display: flex;
 		flex-direction: column;
 		gap: 16px;
-		padding-top: 0 !important;
+
+		@include not-mobile {
+			padding-top: 0 !important;
+		}
 	}
 
 	.tab-bar {
 		--loose: true;
+		margin: 0 (-$page-padding-x);
 
-		:deep(.items > *) {
-			padding-bottom: 10px;
+		&:deep(.items) {
+			padding: 0 $page-padding-x;
+		}
+
+		@include mobile {
+			display: none;
 		}
 	}
 </style>

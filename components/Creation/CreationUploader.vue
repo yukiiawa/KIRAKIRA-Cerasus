@@ -17,17 +17,11 @@
 
 <template>
 	<Comp>
-		<UserAvatar :avatar :uid />
-		<div class="text">
-			<div class="name">
-				<span class="nickname">{{ nickname }}</span>
-				<!-- TODO: 显示管理组用户组图标。 -->
-			</div>
-			<div class="more">
-				<span class="username">@{{ username }}</span>
-				<span class="fans">{{ fans }} {{ t(fans).fans }}</span>
-			</div>
-		</div>
+		<UserContent :avatar="avatar" :nickname="nickname" :username="username" :fans="fans" :uid="uid" size="large" center>
+			<template #description>
+				{{ fans }} {{ t(fans).fans }}
+			</template>
+		</UserContent>
 		<Button v-if="!isFollowed" icon="add">{{ t.follow_verb }}</Button>
 		<Button v-else disabled icon="check">{{ t.following }}</Button>
 	</Comp>
@@ -39,39 +33,12 @@
 		gap: 12px;
 		align-items: center;
 
-		> :not(.text) {
+		> :not(.user-content) {
 			flex-shrink: 0;
 		}
 
-		.text {
+		.user-content {
 			width: 100%;
-			min-width: 0;
-
-			.name {
-				display: flex;
-				gap: 4px;
-				margin-bottom: 4px;
-				font-size: 18px;
-				user-select: text;
-
-				.nickname {
-					font-weight: bold;
-				}
-			}
-
-			.more {
-				display: flex;
-				gap: 8px;
-				align-items: center;
-				color: c(icon-color);
-				font-size: 12px;
-			}
-
-			span {
-				overflow: hidden;
-				white-space: nowrap;
-				text-overflow: ellipsis;
-			}
 		}
 	}
 </style>

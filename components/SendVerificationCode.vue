@@ -1,7 +1,7 @@
 <script setup lang="ts">
 	const props = defineProps<{
 		/** 邀请码的用途 */
-		verificationCodeFor: "registration" | "change-email" | "change-password";
+		verificationCodeFor: "registration" | "change-email" | "change-password" | "delete-email-2fa";
 		/** 邮箱 */ // WARN 当 verificationCodeFor 为 change-password 时无需传递该参数。
 		email?: string;
 		/** 是否是禁用状态 */
@@ -70,6 +70,19 @@
 	}
 
 	/**
+	 * 请求发送删除 Email 身份验证器验证码
+	 */
+	async function requestSendDeleteEmail2FAVerificationCodeEmail() {
+		const locale = getCurrentLocaleLangCode();
+		const sendUserDeleteEmailAuthenticatorVerificationCodeRequest: SendUserDeleteEmailAuthenticatorVerificationCodeRequestDto = {
+			clientLanguage: locale,
+		};
+		const sendUserEmailAuthenticatorVerificationCodeResult = await api.user.sendDeleteUserEmailAuthenticatorVerificationCode(sendUserDeleteEmailAuthenticatorVerificationCodeRequest);
+		if (sendUserEmailAuthenticatorVerificationCodeResult.success && sendUserEmailAuthenticatorVerificationCodeResult.isCoolingDown)
+			useToast("邮件发送冷却中，请稍后再试", "error", 5000);
+	}
+
+	/**
 	 * 发送验证码。
 	 */
 	async function sendVerificationCode() {
@@ -84,6 +97,9 @@
 					break;
 				case "change-password":
 					await requestSendChangePasswordVerificationCodeEmail();
+					break;
+				case "delete-email-2fa":
+					await requestSendDeleteEmail2FAVerificationCodeEmail();
 					break;
 				default:
 					console.error("ERROR", "必须指定发送邀请码的目的。");

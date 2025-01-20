@@ -32,7 +32,7 @@
 		}
 
 		&.tile {
-			grid-template-columns: repeat(auto-fill, minmax(342px, 1fr));
+			grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
 		}
 	}
 </style>

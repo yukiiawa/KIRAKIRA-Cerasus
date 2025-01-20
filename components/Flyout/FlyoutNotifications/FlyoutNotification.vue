@@ -23,10 +23,10 @@
 				<div class="page-wrapper">
 					<Transition :name="transitionName" mode="out-in">
 						<div v-if="currentPage === 'reply'">
-							<FlyoutNotificationItem name="哇" username="wow" :uid="8" :date="new Date()" quote="阿斯顿法国红酒快乐阿斯顿法国红酒快乐阿斯顿法国红酒快乐阿斯顿法国红酒快乐">自行车VB你们🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲</FlyoutNotificationItem>
+							<FlyoutNotificationItem nickname="哇" username="wow" :uid="8" :date="new Date()" quote="阿斯顿法国红酒快乐阿斯顿法国红酒快乐阿斯顿法国红酒快乐阿斯顿法国红酒快乐">自行车VB你们🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲🚲</FlyoutNotificationItem>
 						</div>
 						<div v-else-if="currentPage === 'mention'">
-							<FlyoutNotificationItem name="啊" username="ahh" :uid="8" :date="new Date()">感谢<a class="link lite">@被提及的人</a>制作的新设计！</FlyoutNotificationItem>
+							<FlyoutNotificationItem nickname="啊" username="ahh" :uid="8" :date="new Date()">感谢<a class="link lite">@被提及的人</a>制作的新设计！</FlyoutNotificationItem>
 						</div>
 					</Transition>
 				</div>

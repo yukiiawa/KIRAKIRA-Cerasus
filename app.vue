@@ -3,7 +3,7 @@
 	import manifest from "public/manifest.json";
 	import { useDynamicLayout } from "helpers/page-transition";
 
-	const homepage = "https://cerasus.kirakira.moe/";
+	const homepage = "https://kirakira.moe/";
 	const { locale } = useI18n();
 	const appSettings = useAppSettingsStore();
 
@@ -81,9 +81,8 @@
 			{ rel: "alternate", href: `${homepage}fr`, hreflang: "fr" },
 			{ rel: "alternate", href: `${homepage}yue`, hreflang: "zh-yue" },
 			{ rel: "alternate", href: `${homepage}yue`, hreflang: "yue" },
-			{ rel: "preconnect", href: "https://fonts.googleapis.com" },
-			{ rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" },
-			{ rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" },
+			{ rel: "preconnect", href: "https://rsms.me/" },
+			{ rel: "stylesheet", href: "https://rsms.me/inter/inter.css" },
 		],
 	});
 
@@ -108,6 +107,12 @@
 	loadDevGlobal();
 	// 彩蛋
 	loadEgg();
+	if (environment.client)
+		console.log(
+			"\n%cKIRAKIRA☆DOUGA%c\nA cute site for cute people! # KAWAII FOREVER #\n",
+			"font-size: 24px; font-weight: bold; color: #f06e8e;",
+			"color: #f06e8e;",
+		);
 </script>
 
 <template>

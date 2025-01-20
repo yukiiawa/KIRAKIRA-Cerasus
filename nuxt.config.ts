@@ -7,12 +7,11 @@ import cssDoodleLoader from "./plugins/vite/css-doodle";
 import docsLoader from "./plugins/vite/docs";
 import vitePluginScssVariables from "./plugins/vite/scss-variables";
 import scssVariablesLoader from "./plugins/vite/scss-variables-loader";
-import { environment } from "./utils/environment";
 /* import vueNestedSFC from "vite-plugin-vue-nested-sfc"; */
 type OriginalNuxtConfig = Parameters<typeof defineNuxtConfig>[0];
 type BroadNuxtConfig = OriginalNuxtConfig & Record<Exclude<string, keyof OriginalNuxtConfig>, object | string>; // 还敢报错吗？
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // 支持 HTTPS。
-const dev = environment.development;
+const dev = process.env.NODE_ENV === "development";
 
 export default defineNuxtConfig({
 	devtools: {
@@ -137,13 +136,6 @@ export default defineNuxtConfig({
 	},
 
 	nitro: {
-		devProxy: {
-			"/api": {
-				target: "https://rosales.kirakira.moe",
-				prependPath: true,
-				changeOrigin: true,
-			},
-		},
 		compressPublicAssets: {
 			brotli: true,
 		},
@@ -219,13 +211,22 @@ export default defineNuxtConfig({
 	image: {
 		format: ["avif", "webp"], // 只适用于 <NuxtPicture>，对 <NuxtImg> 无效。
 		providers: {
-			kirakira: {
-				name: "kirakira", // optional value to overrider provider name
-				provider: "./providers/nuxt-image/kirakira-image.ts", // Path to custom provider
+			cloudflareProd: {
+				name: "cloudflare-prod", // optional value to overrider provider name
+				provider: "./providers/nuxt-image/cloudflare-images.ts", // Path to custom provider
 				options: {
 					// ... provider options
 					baseURL: "https://kirafile.com",
 					accountHash: "Gyz90amG54C4b_dtJiRpYg",
+				},
+			},
+			cloudflareStg: {
+				name: "cloudflare-stg", // optional value to overrider provider name
+				provider: "./providers/nuxt-image/cloudflare-images.ts", // Path to custom provider
+				options: {
+					// ... provider options
+					baseURL: "https://starcitizen.rip",
+					accountHash: "nLUFLrrgVwzQdEx8eL5BaA",
 				},
 			},
 		},
@@ -287,8 +288,6 @@ export default defineNuxtConfig({
 
 	runtimeConfig: {
 		public: {
-			/** Cloudflare MPD 视频清单 URL 模板，其中 "{videoId}" 部分将会被替换为真实的视频 ID */
-			cloudflareMpdVideoUrlTemplate: "https://customer-yvgxn6arnuae3q89.cloudflarestream.com/{videoId}/manifest/video.mpd",
 			gitBranch: process.env.VERCEL_GIT_COMMIT_REF,
 			gitCommit: process.env.VERCEL_GIT_COMMIT_SHA,
 		},
